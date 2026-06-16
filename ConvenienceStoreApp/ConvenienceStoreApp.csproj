@@ -87,6 +87,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="BLL\README.md" />
+    <None Include="Common\README.md" />
+    <None Include="DAL\README.md" />
+    <None Include="DTOs\README.md" />
+    <None Include="Models\README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

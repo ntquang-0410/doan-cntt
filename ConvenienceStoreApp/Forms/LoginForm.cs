@@ -14,6 +14,7 @@ namespace ConvenienceStoreApp.Forms
         private TextBox txtUsername;
         private TextBox txtPassword;
         private Button btnLogin;
+        private Button btnDemo;
         private Label lblError;
         private Label lblUsername;
         private Label lblPassword;
@@ -111,13 +112,26 @@ namespace ConvenienceStoreApp.Forms
             btnLogin.Size = new Size(320, 45);
             btnLogin.Click += BtnLogin_Click;
 
+            btnDemo = new Button();
+            btnDemo.Text = "XEM GIAO DIỆN DEMO";
+            btnDemo.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            btnDemo.ForeColor = Color.FromArgb(44, 62, 80);
+            btnDemo.BackColor = Color.White;
+            btnDemo.FlatStyle = FlatStyle.Flat;
+            btnDemo.FlatAppearance.BorderSize = 1;
+            btnDemo.FlatAppearance.BorderColor = Color.FromArgb(26, 188, 156);
+            btnDemo.Cursor = Cursors.Hand;
+            btnDemo.Location = new Point(40, 348);
+            btnDemo.Size = new Size(320, 36);
+            btnDemo.Click += BtnDemo_Click;
+
             // Help Label
             Label helpLabel = new Label();
-            helpLabel.Text = "Tài khoản mẫu: admin (pass: admin), cashier (pass: cashier)";
+            helpLabel.Text = "Tài khoản mẫu khi đã import DB: admin01/123456, staff01/123456";
             helpLabel.Font = new Font("Segoe UI", 8, FontStyle.Regular);
             helpLabel.ForeColor = Color.FromArgb(189, 195, 199);
             helpLabel.Size = new Size(360, 20);
-            helpLabel.Location = new Point(20, 370);
+            helpLabel.Location = new Point(20, 392);
             helpLabel.TextAlign = ContentAlignment.MiddleCenter;
 
             cardPanel.Controls.Add(titleLabel);
@@ -128,6 +142,7 @@ namespace ConvenienceStoreApp.Forms
             cardPanel.Controls.Add(txtPassword);
             cardPanel.Controls.Add(lblError);
             cardPanel.Controls.Add(btnLogin);
+            cardPanel.Controls.Add(btnDemo);
             cardPanel.Controls.Add(helpLabel);
 
             this.Controls.Add(cardPanel);
@@ -208,11 +223,7 @@ namespace ConvenienceStoreApp.Forms
                         }
                         catch { }
 
-                        // Transition to MainForm
-                        this.Hide();
-                        MainForm mainForm = new MainForm();
-                        mainForm.FormClosed += (s, args) => this.Close();
-                        mainForm.Show();
+                        OpenMainForm();
                     }
                     else
                     {
@@ -234,6 +245,20 @@ namespace ConvenienceStoreApp.Forms
                 btnLogin.Enabled = true;
                 btnLogin.Text = "ĐĂNG NHẬP";
             }
+        }
+
+        private void BtnDemo_Click(object sender, EventArgs e)
+        {
+            SessionManager.LoginDemo();
+            OpenMainForm();
+        }
+
+        private void OpenMainForm()
+        {
+            this.Hide();
+            MainForm mainForm = new MainForm();
+            mainForm.FormClosed += (s, args) => this.Close();
+            mainForm.Show();
         }
     }
 }

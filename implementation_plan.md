@@ -1,101 +1,117 @@
-# Kế hoạch hoàn thiện ứng dụng WinForms quản lý cửa hàng tiện lợi
+# Kế hoạch triển khai ứng dụng WinForms quản lý cửa hàng tiện lợi
 
-## Tổng quan
+## Định hướng mới
 
-Dự án là ứng dụng Windows Forms bằng C# để quản lý cửa hàng tiện lợi, dùng MySQL và `MySql.Data.dll`. Hệ thống chia quyền theo các vai trò `Admin`, `Manager`, `Cashier`, `Staff`.
+Dự án không bắt buộc dùng SQL Server. Hướng triển khai được chốt là:
 
-Trạng thái sau đợt sửa hiện tại: dự án đã build thành công bằng MSBuild, tạo được file `ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe`. Phần còn lại quan trọng nhất là xác thực database thật và kiểm thử các luồng nghiệp vụ.
+```text
+WinForms .NET Framework 4.8
+  -> Presentation Layer: Forms
+  -> Business Logic Layer: Services/BLL
+  -> Data Access Layer: Repositories/DAL + Entity Framework 6
+  -> MySQL
+```
 
-## Đã hoàn thành
+Ưu tiên trước mắt là **có giao diện chạy được để xem và góp ý**, sau đó mới tách dần code sang mô hình 3 lớp và thay `DatabaseHelper`/SQL trực tiếp bằng EF6.
 
-- Tạo project `.NET Framework 4.8` tại `ConvenienceStoreApp`.
-- Cấu hình `App.config` với connection string MySQL mặc định:
+## Trạng thái hiện tại
 
-  ```text
-  Server=localhost;Port=3306;Database=convenience_store;Uid=root;Pwd=root;Charset=utf8mb4;
-  ```
+- Project `ConvenienceStoreApp` đã build được bằng MSBuild.
+- File chạy: `ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe`.
+- Đã có các form chính:
+  - Login
+  - Main
+  - POS
+  - Daily Shift
+  - Product Management
+  - Inventory
+  - Employee
+  - Customer
+  - Promotion
+  - Report
+- Đã thêm chế độ **Xem giao diện demo** ở `LoginForm`:
+  - Không cần kết nối MySQL.
+  - Tự đăng nhập bằng user nội bộ `demo.admin`.
+  - Mở `MainForm` với quyền `Admin`.
+  - Mặc định hiển thị trang tổng quan giao diện tĩnh để tránh lỗi database khi mới mở app.
+- Database MySQL đã có schema/dump trong thư mục `database`.
+- Service `MySQL80` đang chạy, nhưng máy chưa có `mysql` CLI trong PATH nên chưa xác thực import database bằng dòng lệnh.
 
-- Thêm `MySql.Data.dll` vào `ConvenienceStoreApp\lib`.
-- Tạo các lớp nền:
-  - `DatabaseHelper.cs`: kết nối database, query, non-query, scalar, hash/verify password cơ bản.
-  - `SessionManager.cs`: lưu thông tin user, role, shift hiện tại.
-- Tạo các màn hình chính:
-  - `LoginForm`
-  - `MainForm`
-  - `POSForm`
-  - `DailyShiftForm`
-  - `ProductManagementForm`
-  - `InventoryForm`
-  - `EmployeeForm`
-  - `CustomerForm`
-  - `PromotionForm`
-  - `ReportForm`
-- Sửa lỗi compile:
-  - Chuyển literal font sai kiểu như `9.75pt`, `9.5pt`, `10.5pt` sang `9.75f`, `9.5f`, `10.5f`.
-  - Đổi pattern matching C# mới sang cú pháp tương thích compiler hiện có.
-  - Loại bỏ `TextBox.PlaceholderText`, API không có trong WinForms .NET Framework.
-  - Sửa tham số `DBNull.Value` trong POS để tránh lỗi kiểu dữ liệu.
-  - Bổ sung `System.Collections.Generic` ở các form dùng `List<T>`.
-- Build đã thành công bằng:
+## Milestone 1 - Hoàn thiện giao diện trước
 
-  ```powershell
-  & C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe ConvenienceStoreApp\ConvenienceStoreApp.csproj /t:Build /p:Configuration=Debug
-  ```
+- Giữ toàn bộ form WinForms hiện có.
+- Đảm bảo app mở được từ `ConvenienceStoreApp.exe`.
+- Giữ nút đăng nhập thật cho database.
+- Giữ nút demo để xem giao diện khi database chưa sẵn sàng.
+- Rà layout từng màn hình:
+  - Login: rõ tài khoản demo và tài khoản database mẫu.
+  - Main: sidebar đầy đủ module.
+  - POS: giỏ hàng, tìm sản phẩm, khách hàng, thanh toán.
+  - Inventory: tồn kho, đơn nhập hàng.
+  - Employee/Customer/Promotion/Product/Report: đủ vùng danh sách và form nhập liệu.
 
-## Cảnh báo và giới hạn hiện tại
+## Milestone 2 - Tách mô hình 3 lớp
 
-- Máy build thiếu .NET Framework 4.8 Targeting Pack, nên MSBuild cảnh báo `MSB3644`. Build vẫn thành công nhờ dùng assemblies từ GAC, nhưng nên cài .NET Framework 4.8 Developer Pack/Targeting Pack để build chuẩn hơn.
-- Có warning kiến trúc `MSIL` với reference `AMD64`. Nếu gặp lỗi runtime trên máy khác, cân nhắc đặt `PlatformTarget` rõ ràng là `x64`.
-- Máy có service `MySQL80` đang chạy, nhưng `mysql` CLI không có trong PATH nên chưa import/xác thực database bằng dòng lệnh được.
-- `ProductManagementForm` hiện quản lý sản phẩm và danh mục, chưa có UI đầy đủ cho `product_variants`.
-- `PromotionForm` chủ yếu hỗ trợ `percent` và `fixed`; schema có thêm `buy_x_get_y`, POS hiện chưa xử lý loại này.
-- Chưa kiểm thử thủ công các luồng nghiệp vụ vì cần database đã import và connection string đúng mật khẩu.
+Tạo và chuyển dần sang cấu trúc:
 
-## Việc cần làm tiếp
+```text
+ConvenienceStoreApp/
+├── Forms/              # Presentation Layer
+├── BLL/                # Business logic/services
+├── DAL/                # DbContext, repositories, unit of work
+├── Models/             # Entity classes map database
+├── DTOs/               # View/data transfer models
+└── Common/             # Session, validation, formatting, helpers
+```
 
-1. Xác thực database:
-   - Tạo database `convenience_store` nếu chưa có.
-   - Import `database\dump-convenience_store-202605120906.sql` để có dữ liệu mẫu đầy đủ, hoặc import schema rồi seed data.
-   - Cập nhật `Pwd` trong `ConvenienceStoreApp\App.config` nếu mật khẩu root không phải `root`.
+Nguyên tắc:
 
-2. Kiểm thử đăng nhập:
-   - Thử `admin01` / `123456`.
-   - Thử `staff01` / `123456`.
-   - Kiểm tra user inactive bị chặn.
-   - Kiểm tra phân quyền menu theo role.
+- Form chỉ xử lý giao diện, sự kiện, bind dữ liệu, hiển thị thông báo.
+- BLL xử lý nghiệp vụ: đăng nhập, phân quyền, tính tiền, tồn kho, khuyến mãi, ca làm việc.
+- DAL xử lý truy cập dữ liệu bằng EF6.
+- Models map với bảng MySQL.
+- DTOs phục vụ DataGridView và dữ liệu màn hình, tránh để Form tự join/query phức tạp.
 
-3. Kiểm thử POS và ca làm việc:
-   - Cashier mở ca trong `DailyShiftForm`.
-   - Thêm sản phẩm bằng barcode hoặc tìm kiếm.
-   - Chọn khách hàng theo số điện thoại.
-   - Thanh toán bằng `cash`, `card`, `e_wallet`.
-   - Kiểm tra `orders`, `order_items`, `order_promotions`, tồn kho và điểm khách hàng sau giao dịch.
+## Milestone 3 - Entity Framework 6 + MySQL
 
-4. Kiểm thử kho:
-   - Tạo purchase order.
-   - Xác nhận nhận hàng.
-   - Kiểm tra trigger `trg_purchase_received` cộng tồn kho và ghi `stock_movements`.
+- Thêm provider EF6 cho MySQL:
+  - `MySql.Data`
+  - `MySql.Data.EntityFramework` hoặc provider EF6 tương thích phiên bản đang dùng.
+- Tạo `DAL/AppDbContext.cs`.
+- Tạo entity cho các bảng chính:
+  - `User`
+  - `Category`
+  - `Product`
+  - `ProductVariant`
+  - `Inventory`
+  - `Customer`
+  - `Order`
+  - `OrderItem`
+  - `Promotion`
+  - `PurchaseOrder`
+  - `StockMovement`
+- Chuyển CRUD đơn giản trước:
+  - Customer
+  - Employee
+  - Promotion
+- Sau đó chuyển module phức tạp:
+  - Product/Category/Variant
+  - Inventory/PurchaseOrder
+  - POS/Order/Payment
 
-5. Kiểm thử CRUD quản trị:
-   - Sản phẩm, danh mục, trạng thái active.
-   - Nhân viên, role, khóa/mở tài khoản.
-   - Khách hàng và lịch sử điểm.
-   - Khuyến mãi percent/fixed.
-   - Báo cáo doanh thu, top sản phẩm, audit log.
+## Việc còn lại gần nhất
 
-6. Hoàn thiện chức năng còn thiếu:
-   - UI quản lý biến thể sản phẩm.
-   - Logic khuyến mãi `buy_x_get_y`.
-   - In hóa đơn hoặc xuất hóa đơn.
-   - Thông báo lỗi kết nối database rõ hơn ở màn hình login.
-   - Kiểm tra và chuẩn hóa dữ liệu đầu vào trước khi ghi database.
+1. Chạy và rà giao diện demo.
+2. Sửa layout nếu có màn hình bị lệch, khó nhìn, hoặc thao tác chưa rõ.
+3. Import database MySQL.
+4. Kiểm thử đăng nhập thật bằng `admin01/123456` và `staff01/123456`.
+5. Tạo thư mục BLL/DAL/Models/DTOs/Common và chuyển module `Customer` hoặc `Employee` đầu tiên sang 3 lớp.
+6. Sau khi module đầu tiên ổn, áp dụng cùng pattern cho các module còn lại.
 
 ## Tiêu chí hoàn thành
 
-- Build không lỗi.
-- Database import được và app kết nối được.
-- Tài khoản demo đăng nhập được.
-- Cashier bán được một đơn hàng từ đầu đến cuối.
-- Tồn kho tự động giảm khi bán hàng và tăng khi nhận hàng.
-- Admin/Manager dùng được các màn hình quản trị chính.
-- README phản ánh đúng cách build, cấu hình và chạy dự án.
+- App mở được giao diện demo không cần database.
+- App đăng nhập thật được khi database đã import đúng.
+- Các form chính thao tác được với dữ liệu thật.
+- Code không còn SQL trực tiếp trong Form sau khi hoàn tất refactor.
+- Dự án trình bày rõ mô hình 3 lớp: Presentation, Business Logic, Data Access.

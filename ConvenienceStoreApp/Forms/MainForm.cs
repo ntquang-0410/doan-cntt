@@ -105,7 +105,11 @@ namespace ConvenienceStoreApp.Forms
             headerPanel.Paint += HeaderPanel_Paint;
 
             lblUserStatus = new Label();
-            lblUserStatus.Text = string.Format("Xin chào, {0} ({1})", SessionManager.FullName, GetRoleDisplayName(SessionManager.Role));
+            lblUserStatus.Text = string.Format(
+                "Xin chào, {0} ({1}){2}",
+                SessionManager.FullName,
+                GetRoleDisplayName(SessionManager.Role),
+                SessionManager.IsDemoMode ? " - Chế độ demo giao diện" : "");
             lblUserStatus.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             lblUserStatus.ForeColor = Color.FromArgb(44, 62, 80);
             lblUserStatus.AutoSize = true;
@@ -213,6 +217,12 @@ namespace ConvenienceStoreApp.Forms
 
         private void LoadDefaultScreen()
         {
+            if (SessionManager.IsDemoMode)
+            {
+                ShowDemoHome();
+                return;
+            }
+
             // By default, open POS for Cashiers/Staff, or Report Dashboard for Manager/Admin
             if (SessionManager.IsManager)
             {
@@ -232,6 +242,100 @@ namespace ConvenienceStoreApp.Forms
                 HighlightNavButton(btnPOS);
                 ShowChildForm(new POSForm());
             }
+        }
+
+        private void ShowDemoHome()
+        {
+            if (btnReports != null)
+            {
+                HighlightNavButton(btnReports);
+            }
+            else
+            {
+                HighlightNavButton(btnPOS);
+            }
+
+            Panel demoPanel = new Panel();
+            demoPanel.Dock = DockStyle.Fill;
+            demoPanel.BackColor = Color.FromArgb(245, 246, 250);
+
+            Label title = new Label();
+            title.Text = "GIAO DIỆN QUẢN LÝ CỬA HÀNG TIỆN LỢI";
+            title.Font = new Font("Segoe UI", 20, FontStyle.Bold);
+            title.ForeColor = Color.FromArgb(44, 62, 80);
+            title.Size = new Size(900, 45);
+            title.Location = new Point(40, 45);
+
+            Label subtitle = new Label();
+            subtitle.Text = "Đang chạy ở chế độ demo giao diện. Có thể xem bố cục chính trước khi kết nối MySQL và chuyển dần sang mô hình 3 lớp.";
+            subtitle.Font = new Font("Segoe UI", 10.5f, FontStyle.Regular);
+            subtitle.ForeColor = Color.FromArgb(91, 105, 120);
+            subtitle.Size = new Size(940, 30);
+            subtitle.Location = new Point(42, 92);
+
+            string[] modules = new string[]
+            {
+                "Bán hàng POS",
+                "Ca làm việc",
+                "Khách hàng",
+                "Sản phẩm",
+                "Tồn kho & nhập hàng",
+                "Khuyến mãi",
+                "Nhân viên",
+                "Báo cáo"
+            };
+
+            int left = 42;
+            int top = 150;
+            int cardWidth = 230;
+            int cardHeight = 95;
+
+            for (int i = 0; i < modules.Length; i++)
+            {
+                Panel card = CreateDemoCard(modules[i], left + (i % 3) * (cardWidth + 20), top + (i / 3) * (cardHeight + 20), cardWidth, cardHeight);
+                demoPanel.Controls.Add(card);
+            }
+
+            Label note = new Label();
+            note.Text = "Bước tiếp theo: import database, xác thực đăng nhập thật, sau đó tách code sang BLL/DAL/Models để dễ bảo trì.";
+            note.Font = new Font("Segoe UI", 10, FontStyle.Italic);
+            note.ForeColor = Color.FromArgb(127, 140, 141);
+            note.Size = new Size(900, 30);
+            note.Location = new Point(42, top + 3 * (cardHeight + 20) + 20);
+
+            demoPanel.Controls.Add(title);
+            demoPanel.Controls.Add(subtitle);
+            demoPanel.Controls.Add(note);
+
+            contentPanel.Controls.Clear();
+            contentPanel.Controls.Add(demoPanel);
+        }
+
+        private Panel CreateDemoCard(string title, int left, int top, int width, int height)
+        {
+            Panel card = new Panel();
+            card.Size = new Size(width, height);
+            card.Location = new Point(left, top);
+            card.BackColor = Color.White;
+            card.BorderStyle = BorderStyle.FixedSingle;
+
+            Label name = new Label();
+            name.Text = title;
+            name.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            name.ForeColor = Color.FromArgb(44, 62, 80);
+            name.Location = new Point(15, 18);
+            name.Size = new Size(width - 30, 24);
+
+            Label status = new Label();
+            status.Text = "Đã có form giao diện";
+            status.Font = new Font("Segoe UI", 9, FontStyle.Regular);
+            status.ForeColor = Color.FromArgb(26, 188, 156);
+            status.Location = new Point(15, 50);
+            status.Size = new Size(width - 30, 22);
+
+            card.Controls.Add(name);
+            card.Controls.Add(status);
+            return card;
         }
 
         private string GetRoleDisplayName(string role)

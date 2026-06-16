@@ -9,6 +9,7 @@ namespace ConvenienceStoreApp
         private static string _fullName;
         private static string _role;
         private static int _currentShiftId = -1;
+        private static bool _isDemoMode = false;
 
         public static int UserId 
         { 
@@ -40,6 +41,12 @@ namespace ConvenienceStoreApp
             set { _currentShiftId = value; } 
         }
 
+        public static bool IsDemoMode
+        {
+            get { return _isDemoMode; }
+            set { _isDemoMode = value; }
+        }
+
         public static bool IsLoggedIn 
         { 
             get { return UserId != -1; } 
@@ -67,6 +74,17 @@ namespace ConvenienceStoreApp
             FullName = fullName;
             Role = role;
             CurrentShiftId = -1;
+            IsDemoMode = false;
+        }
+
+        public static void LoginDemo()
+        {
+            UserId = 0;
+            Username = "demo.admin";
+            FullName = "Tài khoản Demo";
+            Role = "Admin";
+            CurrentShiftId = -1;
+            IsDemoMode = true;
         }
 
         public static void Logout()
@@ -76,6 +94,7 @@ namespace ConvenienceStoreApp
             FullName = null;
             Role = null;
             CurrentShiftId = -1;
+            IsDemoMode = false;
         }
     }
 }
