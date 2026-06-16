@@ -86,7 +86,6 @@ namespace ConvenienceStoreApp.Forms
             txtStockSearch = new TextBox();
             txtStockSearch.Size = new Size(250, 25);
             txtStockSearch.Location = new Point(15, 12);
-            txtStockSearch.PlaceholderText = "Tìm theo tên sản phẩm hoặc barcode...";
             txtStockSearch.KeyDown += TxtStockSearch_KeyDown;
 
             btnStockSearch = new Button();
@@ -139,7 +138,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnCreatePO = new Button();
             btnCreatePO.Text = "➕ Tạo Đơn Nhập Hàng";
-            btnCreatePO.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnCreatePO.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnCreatePO.BackColor = Color.FromArgb(26, 188, 156);
             btnCreatePO.ForeColor = Color.White;
             btnCreatePO.FlatStyle = FlatStyle.Flat;
@@ -150,7 +149,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnReceivePO = new Button();
             btnReceivePO.Text = "✅ Xác Nhận Nhận Hàng (Nhập Kho)";
-            btnReceivePO.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnReceivePO.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnReceivePO.BackColor = Color.FromArgb(46, 204, 113);
             btnReceivePO.ForeColor = Color.White;
             btnReceivePO.FlatStyle = FlatStyle.Flat;
@@ -587,3 +586,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

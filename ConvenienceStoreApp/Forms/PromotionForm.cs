@@ -44,13 +44,13 @@ namespace ConvenienceStoreApp.Forms
             actionPanel.Dock = DockStyle.Top;
             actionPanel.Height = 50;
 
-            btnAdd = new Button() { Text = "➕ Tạo Khuyến Mãi", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(160, 30), Location = new Point(15, 10), Cursor = Cursors.Hand };
+            btnAdd = new Button() { Text = "➕ Tạo Khuyến Mãi", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(160, 30), Location = new Point(15, 10), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            btnEdit = new Button() { Text = "✏️ Sửa Chiến Dịch", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(52, 152, 219), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 30), Location = new Point(185, 10), Cursor = Cursors.Hand };
+            btnEdit = new Button() { Text = "✏️ Sửa Chiến Dịch", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(52, 152, 219), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 30), Location = new Point(185, 10), Cursor = Cursors.Hand };
             btnEdit.Click += BtnEdit_Click;
 
-            btnToggleStatus = new Button() { Text = "🔒 Bật/Tắt Áp Dụng", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(127, 140, 141), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 30), Location = new Point(335, 10), Cursor = Cursors.Hand };
+            btnToggleStatus = new Button() { Text = "🔒 Bật/Tắt Áp Dụng", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(127, 140, 141), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 30), Location = new Point(335, 10), Cursor = Cursors.Hand };
             btnToggleStatus.Click += BtnToggleStatus_Click;
 
             actionPanel.Controls.Add(btnAdd);
@@ -66,7 +66,7 @@ namespace ConvenienceStoreApp.Forms
             dgvPromotions.ReadOnly = true;
             dgvPromotions.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvPromotions.RowHeadersVisible = false;
-            dgvPromotions.Font = new Font("Segoe UI", 9.5pt);
+            dgvPromotions.Font = new Font("Segoe UI", 9.5f);
 
             // Editor Panel Setup
             SetupEditorPanel();
@@ -129,7 +129,7 @@ namespace ConvenienceStoreApp.Forms
 
             chkActive = new CheckBox();
             chkActive.Text = "Kích hoạt áp dụng";
-            chkActive.Font = new Font("Segoe UI", 9.5pt);
+            chkActive.Font = new Font("Segoe UI", 9.5f);
             chkActive.Checked = true;
             chkActive.Location = new Point(inputX, rowY);
             chkActive.Size = new Size(200, 20);
@@ -151,13 +151,13 @@ namespace ConvenienceStoreApp.Forms
 
         private void CreateEditorLabel(string text, int top, int left)
         {
-            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5pt), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
+            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
             pnlEditor.Controls.Add(lbl);
         }
 
         private TextBox CreateEditorTextBox(int top, int left, int width)
         {
-            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5pt), Size = new Size(width, 25), Location = new Point(left, top) };
+            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5f), Size = new Size(width, 25), Location = new Point(left, top) };
             pnlEditor.Controls.Add(txt);
             return txt;
         }
@@ -338,3 +338,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

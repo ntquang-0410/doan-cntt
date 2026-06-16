@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -55,7 +56,7 @@ namespace ConvenienceStoreApp.Forms
             // --- LEFT PANEL: CATEGORIES ---
             grpCategories = new GroupBox();
             grpCategories.Text = "Danh Mục Sản Phẩm";
-            grpCategories.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpCategories.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpCategories.ForeColor = Color.FromArgb(44, 62, 80);
             grpCategories.Dock = DockStyle.Fill;
             grpCategories.Padding = new Padding(10);
@@ -117,7 +118,7 @@ namespace ConvenienceStoreApp.Forms
             // --- RIGHT PANEL: PRODUCTS ---
             grpProducts = new GroupBox();
             grpProducts.Text = "Danh Sách Sản Phẩm";
-            grpProducts.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpProducts.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpProducts.ForeColor = Color.FromArgb(44, 62, 80);
             grpProducts.Dock = DockStyle.Fill;
             grpProducts.Padding = new Padding(10);
@@ -134,7 +135,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnSearch = new Button();
             btnSearch.Text = "Tìm kiếm";
-            btnSearch.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnSearch.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnSearch.BackColor = Color.FromArgb(52, 73, 94);
             btnSearch.ForeColor = Color.White;
             btnSearch.FlatStyle = FlatStyle.Flat;
@@ -146,7 +147,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnAddProduct = new Button();
             btnAddProduct.Text = "➕ Thêm Sản Phẩm";
-            btnAddProduct.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnAddProduct.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnAddProduct.BackColor = Color.FromArgb(26, 188, 156);
             btnAddProduct.ForeColor = Color.White;
             btnAddProduct.FlatStyle = FlatStyle.Flat;
@@ -158,7 +159,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnEditProduct = new Button();
             btnEditProduct.Text = "✏️ Sửa";
-            btnEditProduct.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnEditProduct.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnEditProduct.BackColor = Color.FromArgb(52, 152, 219);
             btnEditProduct.ForeColor = Color.White;
             btnEditProduct.FlatStyle = FlatStyle.Flat;
@@ -170,7 +171,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnToggleActiveProduct = new Button();
             btnToggleActiveProduct.Text = "📴 Bật/Tắt";
-            btnToggleActiveProduct.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnToggleActiveProduct.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnToggleActiveProduct.BackColor = Color.FromArgb(127, 140, 141);
             btnToggleActiveProduct.ForeColor = Color.White;
             btnToggleActiveProduct.FlatStyle = FlatStyle.Flat;
@@ -196,7 +197,7 @@ namespace ConvenienceStoreApp.Forms
             dgvProducts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvProducts.MultiSelect = false;
             dgvProducts.RowHeadersVisible = false;
-            dgvProducts.Font = new Font("Segoe UI", 9.5pt);
+            dgvProducts.Font = new Font("Segoe UI", 9.5f);
 
             grpProducts.Controls.Add(dgvProducts);
             grpProducts.Controls.Add(pnlProdSearch);
@@ -272,7 +273,7 @@ namespace ConvenienceStoreApp.Forms
 
             chkProdActive = new CheckBox();
             chkProdActive.Text = "Còn kinh doanh (Active)";
-            chkProdActive.Font = new Font("Segoe UI", 9.5pt);
+            chkProdActive.Font = new Font("Segoe UI", 9.5f);
             chkProdActive.Checked = true;
             chkProdActive.Location = new Point(inputX, rowY);
             chkProdActive.Size = new Size(200, 20);
@@ -310,7 +311,7 @@ namespace ConvenienceStoreApp.Forms
         {
             Label lbl = new Label();
             lbl.Text = text;
-            lbl.Font = new Font("Segoe UI", 9.5pt);
+            lbl.Font = new Font("Segoe UI", 9.5f);
             lbl.ForeColor = Color.FromArgb(71, 84, 103);
             lbl.Location = new Point(left, top + 3);
             lbl.AutoSize = true;
@@ -320,7 +321,7 @@ namespace ConvenienceStoreApp.Forms
         private TextBox CreateEditorTextBox(int top, int left, int width)
         {
             TextBox txt = new TextBox();
-            txt.Font = new Font("Segoe UI", 9.5pt);
+            txt.Font = new Font("Segoe UI", 9.5f);
             txt.Size = new Size(width, 25);
             txt.Location = new Point(left, top);
             pnlEditor.Controls.Add(txt);
@@ -755,3 +756,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

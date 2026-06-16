@@ -108,7 +108,7 @@ namespace ConvenienceStoreApp.Forms
 
             lblQty = new Label();
             lblQty.Text = "Số lượng:";
-            lblQty.Font = new Font("Segoe UI", 9.75pt, FontStyle.Regular);
+            lblQty.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
             lblQty.Location = new Point(5, 15);
             lblQty.Width = 60;
 
@@ -123,7 +123,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnRemoveItem = new Button();
             btnRemoveItem.Text = "❌ Xóa Khỏi Giỏ";
-            btnRemoveItem.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            btnRemoveItem.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             btnRemoveItem.ForeColor = Color.White;
             btnRemoveItem.BackColor = Color.FromArgb(231, 76, 60);
             btnRemoveItem.FlatStyle = FlatStyle.Flat;
@@ -135,7 +135,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnClearCart = new Button();
             btnClearCart.Text = "🗑️ Hủy Giỏ Hàng";
-            btnClearCart.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            btnClearCart.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             btnClearCart.ForeColor = Color.White;
             btnClearCart.BackColor = Color.FromArgb(127, 140, 141);
             btnClearCart.FlatStyle = FlatStyle.Flat;
@@ -159,7 +159,7 @@ namespace ConvenienceStoreApp.Forms
             // 1. Product Search Group
             grpProductSearch = new GroupBox();
             grpProductSearch.Text = "Tìm Kiếm Sản Phẩm (Tên hoặc Barcode)";
-            grpProductSearch.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpProductSearch.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpProductSearch.ForeColor = Color.FromArgb(44, 62, 80);
             grpProductSearch.Size = new Size(420, 160);
             grpProductSearch.Location = new Point(15, 15);
@@ -173,7 +173,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnAddProduct = new Button();
             btnAddProduct.Text = "Thêm";
-            btnAddProduct.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            btnAddProduct.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             btnAddProduct.BackColor = Color.FromArgb(26, 188, 156);
             btnAddProduct.ForeColor = Color.White;
             btnAddProduct.FlatStyle = FlatStyle.Flat;
@@ -183,7 +183,7 @@ namespace ConvenienceStoreApp.Forms
             btnAddProduct.Click += BtnAddProduct_Click;
 
             lstProductResults = new ListBox();
-            lstProductResults.Font = new Font("Segoe UI", 9.75pt);
+            lstProductResults.Font = new Font("Segoe UI", 9.75f);
             lstProductResults.Location = new Point(15, 60);
             lstProductResults.Size = new Size(385, 80);
             lstProductResults.Visible = false;
@@ -196,7 +196,7 @@ namespace ConvenienceStoreApp.Forms
             // 2. Customer Member Group
             grpCustomer = new GroupBox();
             grpCustomer.Text = "Khách Hàng Thành Viên";
-            grpCustomer.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpCustomer.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpCustomer.ForeColor = Color.FromArgb(44, 62, 80);
             grpCustomer.Size = new Size(420, 110);
             grpCustomer.Location = new Point(15, 190);
@@ -208,7 +208,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnSearchCustomer = new Button();
             btnSearchCustomer.Text = "Tìm kiếm";
-            btnSearchCustomer.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            btnSearchCustomer.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             btnSearchCustomer.BackColor = Color.FromArgb(52, 152, 219);
             btnSearchCustomer.ForeColor = Color.White;
             btnSearchCustomer.FlatStyle = FlatStyle.Flat;
@@ -219,7 +219,7 @@ namespace ConvenienceStoreApp.Forms
 
             lblCustomerInfo = new Label();
             lblCustomerInfo.Text = "Khách vãng lai (Không tích điểm)";
-            lblCustomerInfo.Font = new Font("Segoe UI", 9.75pt, FontStyle.Regular);
+            lblCustomerInfo.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
             lblCustomerInfo.ForeColor = Color.FromArgb(127, 140, 141);
             lblCustomerInfo.Location = new Point(15, 65);
             lblCustomerInfo.Size = new Size(385, 35);
@@ -231,7 +231,7 @@ namespace ConvenienceStoreApp.Forms
             // 3. Checkout Summary Group
             grpCheckout = new GroupBox();
             grpCheckout.Text = "Chi Tiết Thanh Toán";
-            grpCheckout.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpCheckout.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpCheckout.ForeColor = Color.FromArgb(44, 62, 80);
             grpCheckout.Size = new Size(420, 390);
             grpCheckout.Location = new Point(15, 315);
@@ -523,7 +523,8 @@ namespace ConvenienceStoreApp.Forms
 
         private void LstProductResults_DoubleClick(object sender, EventArgs e)
         {
-            if (lstProductResults.SelectedItem is ProductSearchItem item)
+            ProductSearchItem item = lstProductResults.SelectedItem as ProductSearchItem;
+            if (item != null)
             {
                 AddSearchItemToCart(item);
                 txtBarcodeSearch.Text = "";
@@ -815,7 +816,7 @@ namespace ConvenienceStoreApp.Forms
                             MySqlCommand cmdItem = new MySqlCommand(itemSql, conn, trans);
                             cmdItem.Parameters.AddWithValue("@oid", orderId);
                             cmdItem.Parameters.AddWithValue("@pid", Convert.ToInt32(row["ProductId"]));
-                            cmdItem.Parameters.AddWithValue("@vid", row["VariantId"] != DBNull.Value ? Convert.ToInt32(row["VariantId"]) : DBNull.Value);
+                            cmdItem.Parameters.AddWithValue("@vid", row["VariantId"] != DBNull.Value ? (object)Convert.ToInt32(row["VariantId"]) : DBNull.Value);
                             cmdItem.Parameters.AddWithValue("@qty", Convert.ToInt32(row["Quantity"]));
                             cmdItem.Parameters.AddWithValue("@price", Convert.ToDecimal(row["UnitPrice"]));
                             cmdItem.Parameters.AddWithValue("@disc", Convert.ToDecimal(row["Discount"]));
@@ -863,3 +864,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

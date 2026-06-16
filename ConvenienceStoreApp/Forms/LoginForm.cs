@@ -62,7 +62,7 @@ namespace ConvenienceStoreApp.Forms
             // Username Field
             lblUsername = new Label();
             lblUsername.Text = "Tên đăng nhập";
-            lblUsername.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            lblUsername.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             lblUsername.ForeColor = Color.FromArgb(71, 84, 103);
             lblUsername.Location = new Point(40, 115);
             lblUsername.Size = new Size(320, 20);
@@ -76,7 +76,7 @@ namespace ConvenienceStoreApp.Forms
             // Password Field
             lblPassword = new Label();
             lblPassword.Text = "Mật khẩu";
-            lblPassword.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            lblPassword.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             lblPassword.ForeColor = Color.FromArgb(71, 84, 103);
             lblPassword.Location = new Point(40, 185);
             lblPassword.Size = new Size(320, 20);
@@ -237,3 +237,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

@@ -51,13 +51,13 @@ namespace ConvenienceStoreApp.Forms
             pnlHeader.BackColor = Color.White;
             pnlHeader.Paint += PnlHeader_Paint;
 
-            Label lblStart = new Label() { Text = "Từ ngày:", Location = new Point(20, 20), AutoSize = true, Font = new Font("Segoe UI", 9.5pt) };
-            dtpStart = new DateTimePicker() { Format = DateTimePickerFormat.Short, Value = DateTime.Today.AddDays(-30), Size = new Size(120, 25), Location = new Point(85, 17), Font = new Font("Segoe UI", 9.5pt) };
+            Label lblStart = new Label() { Text = "Từ ngày:", Location = new Point(20, 20), AutoSize = true, Font = new Font("Segoe UI", 9.5f) };
+            dtpStart = new DateTimePicker() { Format = DateTimePickerFormat.Short, Value = DateTime.Today.AddDays(-30), Size = new Size(120, 25), Location = new Point(85, 17), Font = new Font("Segoe UI", 9.5f) };
             
-            Label lblEnd = new Label() { Text = "Đến ngày:", Location = new Point(230, 20), AutoSize = true, Font = new Font("Segoe UI", 9.5pt) };
-            dtpEnd = new DateTimePicker() { Format = DateTimePickerFormat.Short, Value = DateTime.Today, Size = new Size(120, 25), Location = new Point(300, 17), Font = new Font("Segoe UI", 9.5pt) };
+            Label lblEnd = new Label() { Text = "Đến ngày:", Location = new Point(230, 20), AutoSize = true, Font = new Font("Segoe UI", 9.5f) };
+            dtpEnd = new DateTimePicker() { Format = DateTimePickerFormat.Short, Value = DateTime.Today, Size = new Size(120, 25), Location = new Point(300, 17), Font = new Font("Segoe UI", 9.5f) };
 
-            btnRefresh = new Button() { Text = "📊 Xem Báo Cáo", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(130, 28), Location = new Point(440, 15), Cursor = Cursors.Hand };
+            btnRefresh = new Button() { Text = "📊 Xem Báo Cáo", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(130, 28), Location = new Point(440, 15), Cursor = Cursors.Hand };
             btnRefresh.Click += BtnRefresh_Click;
 
             pnlHeader.Controls.Add(lblStart);
@@ -136,7 +136,7 @@ namespace ConvenienceStoreApp.Forms
             pnlKPIs.Controls.Add(c4);
 
             // Orders list grid
-            GroupBox grpOrdersList = new GroupBox() { Text = "Danh Sách Hóa Đơn Bán Hàng", Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
+            GroupBox grpOrdersList = new GroupBox() { Text = "Danh Sách Hóa Đơn Bán Hàng", Font = new Font("Segoe UI", 9.75f, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
             
             dgvOrders = new DataGridView();
             dgvOrders.Dock = DockStyle.Fill;
@@ -147,7 +147,7 @@ namespace ConvenienceStoreApp.Forms
             dgvOrders.ReadOnly = true;
             dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvOrders.RowHeadersVisible = false;
-            dgvOrders.Font = new Font("Segoe UI", 9.5pt);
+            dgvOrders.Font = new Font("Segoe UI", 9.5f);
 
             grpOrdersList.Controls.Add(dgvOrders);
 
@@ -171,7 +171,7 @@ namespace ConvenienceStoreApp.Forms
 
         private void SetupTopProductsTab()
         {
-            GroupBox grpTop = new GroupBox() { Text = "Sản Phẩm Bán Chạy Nhất", Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
+            GroupBox grpTop = new GroupBox() { Text = "Sản Phẩm Bán Chạy Nhất", Font = new Font("Segoe UI", 9.75f, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
 
             dgvTopProducts = new DataGridView();
             dgvTopProducts.Dock = DockStyle.Fill;
@@ -181,7 +181,7 @@ namespace ConvenienceStoreApp.Forms
             dgvTopProducts.AllowUserToAddRows = false;
             dgvTopProducts.ReadOnly = true;
             dgvTopProducts.RowHeadersVisible = false;
-            dgvTopProducts.Font = new Font("Segoe UI", 9.5pt);
+            dgvTopProducts.Font = new Font("Segoe UI", 9.5f);
 
             grpTop.Controls.Add(dgvTopProducts);
             tabTopProducts.Controls.Add(grpTop);
@@ -189,7 +189,7 @@ namespace ConvenienceStoreApp.Forms
 
         private void SetupAuditLogsTab()
         {
-            GroupBox grpAudit = new GroupBox() { Text = "Nhật Ký Hoạt Động Hệ Thống", Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
+            GroupBox grpAudit = new GroupBox() { Text = "Nhật Ký Hoạt Động Hệ Thống", Font = new Font("Segoe UI", 9.75f, FontStyle.Bold), ForeColor = Color.FromArgb(44, 62, 80), Dock = DockStyle.Fill, Padding = new Padding(10) };
 
             dgvAuditLogs = new DataGridView();
             dgvAuditLogs.Dock = DockStyle.Fill;
@@ -199,7 +199,7 @@ namespace ConvenienceStoreApp.Forms
             dgvAuditLogs.AllowUserToAddRows = false;
             dgvAuditLogs.ReadOnly = true;
             dgvAuditLogs.RowHeadersVisible = false;
-            dgvAuditLogs.Font = new Font("Segoe UI", 9.5pt);
+            dgvAuditLogs.Font = new Font("Segoe UI", 9.5f);
 
             grpAudit.Controls.Add(dgvAuditLogs);
             tabAuditLogs.Controls.Add(grpAudit);
@@ -364,3 +364,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

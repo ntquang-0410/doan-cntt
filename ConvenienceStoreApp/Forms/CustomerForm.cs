@@ -53,7 +53,7 @@ namespace ConvenienceStoreApp.Forms
             // --- TOP PANEL: CUSTOMERS GRID ---
             grpCustomers = new GroupBox();
             grpCustomers.Text = "Thành Viên Tích Điểm";
-            grpCustomers.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpCustomers.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpCustomers.ForeColor = Color.FromArgb(44, 62, 80);
             grpCustomers.Dock = DockStyle.Fill;
             grpCustomers.Padding = new Padding(10);
@@ -66,16 +66,15 @@ namespace ConvenienceStoreApp.Forms
             txtSearch.Font = new Font("Segoe UI", 10);
             txtSearch.Size = new Size(250, 25);
             txtSearch.Location = new Point(5, 10);
-            txtSearch.PlaceholderText = "Nhập tên hoặc số điện thoại...";
             txtSearch.KeyDown += TxtSearch_KeyDown;
 
-            btnSearch = new Button() { Text = "Tìm kiếm", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(52, 73, 94), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(90, 26), Location = new Point(265, 9), Cursor = Cursors.Hand };
+            btnSearch = new Button() { Text = "Tìm kiếm", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(52, 73, 94), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(90, 26), Location = new Point(265, 9), Cursor = Cursors.Hand };
             btnSearch.Click += BtnSearch_Click;
 
-            btnAdd = new Button() { Text = "➕ Đăng Ký Mới", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(130, 26), Location = new Point(365, 9), Cursor = Cursors.Hand };
+            btnAdd = new Button() { Text = "➕ Đăng Ký Mới", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(26, 188, 156), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(130, 26), Location = new Point(365, 9), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            btnEdit = new Button() { Text = "✏️ Sửa Thành Viên", Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold), BackColor = Color.FromArgb(52, 152, 219), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 26), Location = new Point(505, 9), Cursor = Cursors.Hand };
+            btnEdit = new Button() { Text = "✏️ Sửa Thành Viên", Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), BackColor = Color.FromArgb(52, 152, 219), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(140, 26), Location = new Point(505, 9), Cursor = Cursors.Hand };
             btnEdit.Click += BtnEdit_Click;
 
             pnlFilter.Controls.Add(txtSearch);
@@ -92,7 +91,7 @@ namespace ConvenienceStoreApp.Forms
             dgvCustomers.ReadOnly = true;
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.RowHeadersVisible = false;
-            dgvCustomers.Font = new Font("Segoe UI", 9.5pt);
+            dgvCustomers.Font = new Font("Segoe UI", 9.5f);
             dgvCustomers.SelectionChanged += DgvCustomers_SelectionChanged;
 
             grpCustomers.Controls.Add(dgvCustomers);
@@ -102,7 +101,7 @@ namespace ConvenienceStoreApp.Forms
             // --- BOTTOM PANEL: TRANSACTION HISTORY GRID ---
             grpHistory = new GroupBox();
             grpHistory.Text = "Lịch Sử Điểm Tích Lũy (Loyalty Log)";
-            grpHistory.Font = new Font("Segoe UI", 9.75pt, FontStyle.Bold);
+            grpHistory.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
             grpHistory.ForeColor = Color.FromArgb(44, 62, 80);
             grpHistory.Dock = DockStyle.Fill;
             grpHistory.Padding = new Padding(10);
@@ -115,7 +114,7 @@ namespace ConvenienceStoreApp.Forms
             dgvHistory.AllowUserToAddRows = false;
             dgvHistory.ReadOnly = true;
             dgvHistory.RowHeadersVisible = false;
-            dgvHistory.Font = new Font("Segoe UI", 9.5pt);
+            dgvHistory.Font = new Font("Segoe UI", 9.5f);
 
             grpHistory.Controls.Add(dgvHistory);
             splitContainer.Panel2.Controls.Add(grpHistory);
@@ -159,7 +158,7 @@ namespace ConvenienceStoreApp.Forms
 
             chkActive = new CheckBox();
             chkActive.Text = "Thành viên hoạt động (Active)";
-            chkActive.Font = new Font("Segoe UI", 9.5pt);
+            chkActive.Font = new Font("Segoe UI", 9.5f);
             chkActive.Checked = true;
             chkActive.Location = new Point(inputX, rowY);
             chkActive.Size = new Size(220, 20);
@@ -181,13 +180,13 @@ namespace ConvenienceStoreApp.Forms
 
         private void CreateEditorLabel(string text, int top, int left)
         {
-            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5pt), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
+            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
             pnlEditor.Controls.Add(lbl);
         }
 
         private TextBox CreateEditorTextBox(int top, int left, int width)
         {
-            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5pt), Size = new Size(width, 25), Location = new Point(left, top) };
+            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5f), Size = new Size(width, 25), Location = new Point(left, top) };
             pnlEditor.Controls.Add(txt);
             return txt;
         }
@@ -381,3 +380,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

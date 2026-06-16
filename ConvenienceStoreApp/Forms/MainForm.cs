@@ -113,7 +113,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnLogout = new Button();
             btnLogout.Text = "Đăng xuất";
-            btnLogout.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnLogout.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnLogout.ForeColor = Color.FromArgb(231, 76, 60);
             btnLogout.BackColor = Color.Transparent;
             btnLogout.FlatStyle = FlatStyle.Flat;
@@ -145,7 +145,7 @@ namespace ConvenienceStoreApp.Forms
             btn.Text = text;
             btn.Size = new Size(210, 45);
             btn.Location = new Point(10, top);
-            btn.Font = new Font("Segoe UI", 10.5pt, FontStyle.Regular);
+            btn.Font = new Font("Segoe UI", 10.5f, FontStyle.Regular);
             btn.ForeColor = Color.FromArgb(220, 224, 230);
             btn.BackColor = Color.Transparent;
             btn.FlatStyle = FlatStyle.Flat;
@@ -171,13 +171,13 @@ namespace ConvenienceStoreApp.Forms
             {
                 activeNavButton.BackColor = Color.Transparent;
                 activeNavButton.ForeColor = Color.FromArgb(220, 224, 230);
-                activeNavButton.Font = new Font("Segoe UI", 10.5pt, FontStyle.Regular);
+                activeNavButton.Font = new Font("Segoe UI", 10.5f, FontStyle.Regular);
             }
 
             activeNavButton = selectedBtn;
             activeNavButton.BackColor = Color.FromArgb(26, 188, 156); // Teal highlight
             activeNavButton.ForeColor = Color.White;
-            activeNavButton.Font = new Font("Segoe UI", 10.5pt, FontStyle.Bold);
+            activeNavButton.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
         }
 
         private void HeaderPanel_Paint(object sender, PaintEventArgs e)
@@ -194,9 +194,10 @@ namespace ConvenienceStoreApp.Forms
             // Clear content panel
             foreach (Control ctrl in contentPanel.Controls)
             {
-                if (ctrl is Form f)
+                Form form = ctrl as Form;
+                if (form != null)
                 {
-                    f.Close();
+                    form.Close();
                 }
             }
             contentPanel.Controls.Clear();
@@ -258,3 +259,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+

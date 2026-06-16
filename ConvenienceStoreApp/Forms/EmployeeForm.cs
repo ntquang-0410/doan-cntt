@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -45,7 +46,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnAdd = new Button();
             btnAdd.Text = "➕ Thêm Nhân Viên";
-            btnAdd.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnAdd.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnAdd.BackColor = Color.FromArgb(26, 188, 156);
             btnAdd.ForeColor = Color.White;
             btnAdd.FlatStyle = FlatStyle.Flat;
@@ -57,7 +58,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnEdit = new Button();
             btnEdit.Text = "✏️ Sửa Thông Tin";
-            btnEdit.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnEdit.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnEdit.BackColor = Color.FromArgb(52, 152, 219);
             btnEdit.ForeColor = Color.White;
             btnEdit.FlatStyle = FlatStyle.Flat;
@@ -69,7 +70,7 @@ namespace ConvenienceStoreApp.Forms
 
             btnToggleStatus = new Button();
             btnToggleStatus.Text = "🔒 Khóa/Mở Khóa";
-            btnToggleStatus.Font = new Font("Segoe UI", 9.5pt, FontStyle.Bold);
+            btnToggleStatus.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnToggleStatus.BackColor = Color.FromArgb(127, 140, 141);
             btnToggleStatus.ForeColor = Color.White;
             btnToggleStatus.FlatStyle = FlatStyle.Flat;
@@ -92,7 +93,7 @@ namespace ConvenienceStoreApp.Forms
             dgvEmployees.ReadOnly = true;
             dgvEmployees.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvEmployees.RowHeadersVisible = false;
-            dgvEmployees.Font = new Font("Segoe UI", 9.5pt);
+            dgvEmployees.Font = new Font("Segoe UI", 9.5f);
 
             // Set up Editor Panel Overlay
             SetupEditorPanel();
@@ -130,7 +131,7 @@ namespace ConvenienceStoreApp.Forms
 
             lblPasswordHelp = new Label();
             lblPasswordHelp.Text = "(Để trống nếu không muốn đổi mật khẩu)";
-            lblPasswordHelp.Font = new Font("Segoe UI", 7.5pt, FontStyle.Italic);
+            lblPasswordHelp.Font = new Font("Segoe UI", 7.5f, FontStyle.Italic);
             lblPasswordHelp.ForeColor = Color.Gray;
             lblPasswordHelp.Size = new Size(230, 15);
             lblPasswordHelp.Location = new Point(inputX, rowY);
@@ -157,7 +158,7 @@ namespace ConvenienceStoreApp.Forms
 
             chkActive = new CheckBox();
             chkActive.Text = "Kích hoạt hoạt động";
-            chkActive.Font = new Font("Segoe UI", 9.5pt);
+            chkActive.Font = new Font("Segoe UI", 9.5f);
             chkActive.Checked = true;
             chkActive.Location = new Point(inputX, rowY);
             chkActive.Size = new Size(200, 20);
@@ -179,13 +180,13 @@ namespace ConvenienceStoreApp.Forms
 
         private void CreateEditorLabel(string text, int top, int left)
         {
-            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5pt), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
+            Label lbl = new Label() { Text = text, Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(71, 84, 103), Location = new Point(left, top + 3), AutoSize = true };
             pnlEditor.Controls.Add(lbl);
         }
 
         private TextBox CreateEditorTextBox(int top, int left, int width)
         {
-            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5pt), Size = new Size(width, 25), Location = new Point(left, top) };
+            TextBox txt = new TextBox() { Font = new Font("Segoe UI", 9.5f), Size = new Size(width, 25), Location = new Point(left, top) };
             pnlEditor.Controls.Add(txt);
             return txt;
         }
@@ -378,3 +379,4 @@ namespace ConvenienceStoreApp.Forms
         }
     }
 }
+
