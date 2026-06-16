@@ -1,9 +1,8 @@
 using System;
-using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using MySql.Data.MySqlClient;
+using ConvenienceStoreApp.BLL;
+using ConvenienceStoreApp.Models;
 
 namespace ConvenienceStoreApp.Forms
 {
@@ -33,6 +32,7 @@ namespace ConvenienceStoreApp.Forms
         private Button btnSave;
         private Button btnCancel;
         private int editingCustomerId = -1;
+        private readonly CustomerService customerService = new CustomerService();
 
         public CustomerForm()
         {
@@ -196,22 +196,8 @@ namespace ConvenienceStoreApp.Forms
         {
             try
             {
-                string sql = "SELECT id, name as HoTen, phone as SoDienThoai, email as Email, loyalty_points as DiemTichLuy, total_spent as TongChiTieu, IF(is_active = 1, 'Hoạt động', 'Ngưng') as TrangThai FROM customers WHERE 1=1";
-                List<MySqlParameter> prs = new List<MySqlParameter>();
-
-                string search = txtSearch.Text.Trim();
-                if (!string.IsNullOrEmpty(search))
-                {
-                    sql += " AND (name LIKE @kw OR phone = @kwExact)";
-                    prs.Add(new MySqlParameter("@kw", "%" + search + "%"));
-                    prs.Add(new MySqlParameter("@kwExact", search));
-                }
-
-                sql += " ORDER BY id DESC";
-
-                DataTable dt = DatabaseHelper.ExecuteQuery(sql, prs.ToArray());
-                dgvCustomers.DataSource = dt;
-                dgvCustomers.Columns["id"].Visible = false;
+                dgvCustomers.DataSource = customerService.SearchCustomers(txtSearch.Text.Trim());
+                dgvCustomers.Columns["Id"].Visible = false;
                 dgvCustomers.Columns["TongChiTieu"].DefaultCellStyle.Format = "N0";
             }
             catch (Exception ex)
@@ -224,21 +210,7 @@ namespace ConvenienceStoreApp.Forms
         {
             try
             {
-                string sql = @"
-                    SELECT lt.id as LogId, lt.order_id as DonHang, lt.points as SoDiem, 
-                           CASE lt.transaction_type 
-                               WHEN 'earn' THEN 'Cộng điểm (+)' 
-                               WHEN 'redeem' THEN 'Trừ điểm (-)' 
-                               WHEN 'expire' THEN 'Hết hạn' 
-                               ELSE 'Điều chỉnh' 
-                           END as LoaiGiaoDich, 
-                           lt.description as MoTa, lt.created_at as ThoiGian
-                    FROM loyalty_transactions lt
-                    WHERE lt.customer_id = @cid
-                    ORDER BY lt.created_at DESC";
-
-                DataTable dt = DatabaseHelper.ExecuteQuery(sql, new MySqlParameter("@cid", customerId));
-                dgvHistory.DataSource = dt;
+                dgvHistory.DataSource = customerService.GetLoyaltyHistory(customerId);
                 dgvHistory.Columns["LogId"].Visible = false;
             }
             catch { }
@@ -264,7 +236,7 @@ namespace ConvenienceStoreApp.Forms
         {
             if (dgvCustomers.CurrentRow != null)
             {
-                int customerId = Convert.ToInt32(dgvCustomers.CurrentRow.Cells["id"].Value);
+                int customerId = Convert.ToInt32(dgvCustomers.CurrentRow.Cells["Id"].Value);
                 LoadLoyaltyHistory(customerId);
             }
             else
@@ -297,18 +269,17 @@ namespace ConvenienceStoreApp.Forms
                 return;
             }
 
-            editingCustomerId = Convert.ToInt32(dgvCustomers.CurrentRow.Cells["id"].Value);
+            editingCustomerId = Convert.ToInt32(dgvCustomers.CurrentRow.Cells["Id"].Value);
 
             try
             {
-                DataTable dt = DatabaseHelper.ExecuteQuery("SELECT * FROM customers WHERE id = @id", new MySqlParameter("@id", editingCustomerId));
-                if (dt.Rows.Count > 0)
+                Customer customer = customerService.GetCustomer(editingCustomerId);
+                if (customer != null)
                 {
-                    DataRow r = dt.Rows[0];
-                    txtName.Text = r["name"].ToString();
-                    txtPhone.Text = r["phone"].ToString();
-                    txtEmail.Text = r["email"].ToString();
-                    chkActive.Checked = Convert.ToBoolean(r["is_active"]);
+                    txtName.Text = customer.Name;
+                    txtPhone.Text = customer.Phone;
+                    txtEmail.Text = customer.Email;
+                    chkActive.Checked = customer.IsActive;
 
                     lblEditorTitle.Text = "SỬA HỘI VIÊN KHÓA #" + editingCustomerId;
                     pnlEditor.Location = new Point((this.Width - pnlEditor.Width) / 2, (this.Height - pnlEditor.Height) / 2);
@@ -328,42 +299,10 @@ namespace ConvenienceStoreApp.Forms
             string name = txtName.Text.Trim();
             string phone = txtPhone.Text.Trim();
             string email = txtEmail.Text.Trim();
-            int active = chkActive.Checked ? 1 : 0;
-
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone))
-            {
-                MessageBox.Show("Vui lòng điền Họ tên và Số điện thoại khách hàng.");
-                return;
-            }
 
             try
             {
-                if (editingCustomerId == -1)
-                {
-                    // Create customer
-                    string sql = "INSERT INTO customers (name, phone, email, is_active) VALUES (@name, @phone, @email, @act)";
-                    MySqlParameter[] prs = new MySqlParameter[] {
-                        new MySqlParameter("@name", name),
-                        new MySqlParameter("@phone", phone),
-                        new MySqlParameter("@email", string.IsNullOrEmpty(email) ? DBNull.Value : (object)email),
-                        new MySqlParameter("@act", active)
-                    };
-                    DatabaseHelper.ExecuteNonQuery(sql, prs);
-                }
-                else
-                {
-                    // Update customer
-                    string sql = "UPDATE customers SET name = @name, phone = @phone, email = @email, is_active = @act WHERE id = @id";
-                    MySqlParameter[] prs = new MySqlParameter[] {
-                        new MySqlParameter("@name", name),
-                        new MySqlParameter("@phone", phone),
-                        new MySqlParameter("@email", string.IsNullOrEmpty(email) ? DBNull.Value : (object)email),
-                        new MySqlParameter("@act", active),
-                        new MySqlParameter("@id", editingCustomerId)
-                    };
-                    DatabaseHelper.ExecuteNonQuery(sql, prs);
-                }
-
+                customerService.SaveCustomer(editingCustomerId, name, phone, email, chkActive.Checked);
                 pnlEditor.Visible = false;
                 LoadCustomers();
                 MessageBox.Show("Lưu thông tin khách hàng thành công!");

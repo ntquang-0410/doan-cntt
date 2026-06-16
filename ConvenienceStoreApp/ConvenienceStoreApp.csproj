@@ -52,7 +52,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="BLL\CustomerService.cs" />
     <Compile Include="DatabaseHelper.cs" />
+    <Compile Include="DAL\CustomerRepository.cs" />
+    <Compile Include="DTOs\CustomerListItemDto.cs" />
+    <Compile Include="DTOs\LoyaltyHistoryDto.cs" />
+    <Compile Include="Models\Customer.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="Forms\LoginForm.cs">
       <SubType>Form</SubType>

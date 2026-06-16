@@ -72,6 +72,18 @@ Nguyên tắc:
 - Models map với bảng MySQL.
 - DTOs phục vụ DataGridView và dữ liệu màn hình, tránh để Form tự join/query phức tạp.
 
+Trạng thái hiện tại của Milestone 2:
+
+- Đã tạo khung thư mục `BLL`, `DAL`, `Models`, `DTOs`, `Common`.
+- Đã tách module `Customer` đầu tiên:
+  - `Models/Customer.cs`
+  - `DTOs/CustomerListItemDto.cs`
+  - `DTOs/LoyaltyHistoryDto.cs`
+  - `DAL/CustomerRepository.cs`
+  - `BLL/CustomerService.cs`
+- `CustomerForm` hiện chỉ gọi `CustomerService`, không còn viết SQL trực tiếp trong Form.
+- DAL vẫn đang dùng `DatabaseHelper` và SQL trực tiếp để giữ app ổn định trước khi đưa EF6 vào.
+
 ## Milestone 3 - Entity Framework 6 + MySQL
 
 - Thêm provider EF6 cho MySQL:
@@ -105,8 +117,9 @@ Nguyên tắc:
 2. Sửa layout nếu có màn hình bị lệch, khó nhìn, hoặc thao tác chưa rõ.
 3. Import database MySQL.
 4. Kiểm thử đăng nhập thật bằng `admin01/123456` và `staff01/123456`.
-5. Tạo thư mục BLL/DAL/Models/DTOs/Common và chuyển module `Customer` hoặc `Employee` đầu tiên sang 3 lớp.
-6. Sau khi module đầu tiên ổn, áp dụng cùng pattern cho các module còn lại.
+5. Kiểm thử module `Customer` với database thật sau khi import dump.
+6. Chuyển module `Employee` sang cùng pattern 3 lớp.
+7. Sau khi Customer/Employee ổn, tiếp tục Promotion, Product, Inventory, POS.
 
 ## Tiêu chí hoàn thành
 
