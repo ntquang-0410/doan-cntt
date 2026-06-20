@@ -729,12 +729,71 @@ namespace ConvenienceStoreApp.Forms
             CalculatePOTotal();
         }
 
+        private void BtnRemovePOItem_Click(object sender, EventArgs e)
+        {
+            if (dgvPOItems.CurrentRow == null || dgvPOItems.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show("Vui lòng chọn dòng sản phẩm cần xóa.", "Chọn dòng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            dgvPOItems.Rows.Remove(dgvPOItems.CurrentRow);
+            CalculatePOTotal();
+        }
+
+        private void DgvPOItems_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            UpdatePOItemRow(e.RowIndex);
+            CalculatePOTotal();
+        }
+
+        private void DgvPOItems_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            MessageBox.Show("Số lượng và giá nhập phải là số hợp lệ.", "Dữ liệu không hợp lệ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            e.ThrowException = false;
+        }
+
+        private void UpdatePOItemRow(int rowIndex)
+        {
+            if (rowIndex < 0 || rowIndex >= poItemsTable.Rows.Count) return;
+
+            DataRow row = poItemsTable.Rows[rowIndex];
+            int qty = Convert.ToInt32(row["Quantity"]);
+            decimal cost = Convert.ToDecimal(row["UnitCost"]);
+
+            if (qty < 1)
+            {
+                qty = 1;
+                row["Quantity"] = qty;
+            }
+            if (cost < 0)
+            {
+                cost = 0;
+                row["UnitCost"] = cost;
+            }
+
+            row["Total"] = qty * cost;
+        }
+
         private void CalculatePOTotal()
         {
             poTotalAmount = 0;
+            foreach (DataRow row in poItemsTable.Rows)
+            {
+                if (row.RowState != DataRowState.Deleted)
+                {
+                    int qty = Convert.ToInt32(row["Quantity"]);
+                    decimal cost = Convert.ToDecimal(row["UnitCost"]);
+                    row["Total"] = qty * cost;
+                }
+            }
+
             foreach (DataRow r in poItemsTable.Rows)
             {
-                poTotalAmount += Convert.ToDecimal(r["Total"]);
+                if (r.RowState != DataRowState.Deleted)
+                {
+                    poTotalAmount += Convert.ToDecimal(r["Total"]);
+                }
             }
             lblPOTotal.Text = string.Format("TỔNG CỘNG: {0:N0} VND", poTotalAmount);
         }
