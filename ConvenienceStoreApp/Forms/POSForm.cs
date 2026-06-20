@@ -62,6 +62,11 @@ namespace ConvenienceStoreApp.Forms
             LoadSettings();
         }
 
+        public bool HasPendingCart
+        {
+            get { return cartTable != null && cartTable.Rows.Count > 0; }
+        }
+
         private void InitializeComponent()
         {
             this.Text = "Quầy Bán Hàng (POS) - Cửa Hàng Tiện Lợi";
@@ -325,6 +330,8 @@ namespace ConvenienceStoreApp.Forms
             AddCartTextColumn("ProductName", "ProductName", "Sản Phẩm", true, 180, null);
             AddCartTextColumn("VariantName", "VariantName", "Phân Loại", true, 90, null);
             AddCartTextColumn("Quantity", "Quantity", "SL", true, 45, null);
+            AddCartButtonColumn("DecreaseQty", "-", 35);
+            AddCartButtonColumn("IncreaseQty", "+", 35);
             AddCartTextColumn("UnitPrice", "UnitPrice", "Đơn Giá", true, 90, "N0");
             AddCartTextColumn("Discount", "Discount", "Khấu Trừ", true, 90, "N0");
             AddCartTextColumn("Total", "Total", "Thành Tiền", true, 100, "N0");
@@ -345,6 +352,19 @@ namespace ConvenienceStoreApp.Forms
             {
                 column.DefaultCellStyle.Format = format;
             }
+            dgvCart.Columns.Add(column);
+        }
+
+        private void AddCartButtonColumn(string name, string text, int width)
+        {
+            DataGridViewButtonColumn column = new DataGridViewButtonColumn();
+            column.Name = name;
+            column.HeaderText = "";
+            column.Text = text;
+            column.UseColumnTextForButtonValue = true;
+            column.Visible = true;
+            column.Width = width;
+            column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dgvCart.Columns.Add(column);
         }
 
@@ -402,18 +422,15 @@ namespace ConvenienceStoreApp.Forms
             {
                 try
                 {
-                    // Search in products and variants
+                    // Simple mode: each barcode is a standalone product.
                     string sql = @"
-                        SELECT p.id as product_id, v.id as variant_id, p.name, v.variant_name, 
-                               COALESCE(v.barcode, p.barcode) as barcode, 
-                               (p.selling_price + COALESCE(v.price_adjustment, 0)) as price
+                        SELECT p.id as product_id, NULL as variant_id, p.name, NULL as variant_name, 
+                               p.barcode as barcode, 
+                               p.selling_price as price
                         FROM products p
-                        LEFT JOIN product_variants v ON p.id = v.product_id
                         WHERE p.is_active = 1 
                           AND (p.name LIKE @kw 
-                               OR p.barcode = @kwExact 
-                               OR v.barcode = @kwExact 
-                               OR v.variant_name LIKE @kw)";
+                               OR p.barcode = @kwExact)";
                     
                     MySqlParameter[] prs = new MySqlParameter[] {
                         new MySqlParameter("@kw", "%" + keyword + "%"),
@@ -426,8 +443,8 @@ namespace ConvenienceStoreApp.Forms
                     {
                         foreach (DataRow row in dt.Rows)
                         {
-                            string itemText = string.Format("{0} | {1} - {2:N0}đ ({3})",
-                                row["barcode"], row["name"], row["price"], row["variant_name"]);
+                            string itemText = string.Format("{0} | {1} - {2:N0}đ",
+                                row["barcode"], row["name"], row["price"]);
                             
                             // Tag row data
                             lstProductResults.Items.Add(new ProductSearchItem {
@@ -504,13 +521,12 @@ namespace ConvenienceStoreApp.Forms
             try
             {
                 string sql = @"
-                    SELECT p.id as product_id, v.id as variant_id, p.name, v.variant_name, 
-                           COALESCE(v.barcode, p.barcode) as barcode, 
-                           (p.selling_price + COALESCE(v.price_adjustment, 0)) as price
+                    SELECT p.id as product_id, NULL as variant_id, p.name, NULL as variant_name, 
+                           p.barcode as barcode, 
+                           p.selling_price as price
                     FROM products p
-                    LEFT JOIN product_variants v ON p.id = v.product_id
                     WHERE p.is_active = 1 
-                      AND (p.barcode = @bc OR v.barcode = @bc)
+                      AND p.barcode = @bc
                     LIMIT 1";
 
                 DataTable dt = DatabaseHelper.ExecuteQuery(sql, new MySqlParameter("@bc", barcode));
@@ -563,10 +579,7 @@ namespace ConvenienceStoreApp.Forms
 
                 if (pId == item.ProductId && vId == item.VariantId)
                 {
-                    // Increase Qty
-                    row["Quantity"] = Convert.ToInt32(row["Quantity"]) + 1;
-                    row["Total"] = Convert.ToInt32(row["Quantity"]) * Convert.ToDecimal(row["UnitPrice"]) - Convert.ToDecimal(row["Discount"]);
-                    RecalculateTotals();
+                    SetCartRowQuantity(row, Convert.ToInt32(row["Quantity"]) + 1);
                     return;
                 }
             }
@@ -607,6 +620,20 @@ namespace ConvenienceStoreApp.Forms
         // --- CART INTERACTIONS ---
         private void DgvCart_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            if (dgvCart.Columns[e.ColumnIndex].Name == "DecreaseQty")
+            {
+                ChangeCartRowQuantity(e.RowIndex, -1);
+                return;
+            }
+
+            if (dgvCart.Columns[e.ColumnIndex].Name == "IncreaseQty")
+            {
+                ChangeCartRowQuantity(e.RowIndex, 1);
+                return;
+            }
+
             if (dgvCart.CurrentRow != null)
             {
                 int qty = Convert.ToInt32(dgvCart.CurrentRow.Cells["Quantity"].Value);
@@ -622,10 +649,62 @@ namespace ConvenienceStoreApp.Forms
                 int rowIndex = dgvCart.CurrentRow.Index;
                 DataRow row = cartTable.Rows[rowIndex];
 
-                row["Quantity"] = newQty;
-                row["Total"] = newQty * Convert.ToDecimal(row["UnitPrice"]) - Convert.ToDecimal(row["Discount"]);
-                RecalculateTotals();
+                SetCartRowQuantity(row, newQty);
             }
+        }
+
+        private void ChangeCartRowQuantity(int rowIndex, int delta)
+        {
+            if (rowIndex < 0 || rowIndex >= cartTable.Rows.Count) return;
+
+            DataRow row = cartTable.Rows[rowIndex];
+            int currentQty = Convert.ToInt32(row["Quantity"]);
+            int newQty = currentQty + delta;
+
+            if (newQty <= 0)
+            {
+                cartTable.Rows.RemoveAt(rowIndex);
+                RecalculateTotals();
+                return;
+            }
+
+            SetCartRowQuantity(row, newQty);
+        }
+
+        private bool SetCartRowQuantity(DataRow row, int newQty)
+        {
+            if (newQty < 1) return false;
+
+            int productId = Convert.ToInt32(row["ProductId"]);
+            int? variantId = row["VariantId"] != DBNull.Value ? Convert.ToInt32(row["VariantId"]) : (int?)null;
+            int availableQty = GetAvailableStock(productId, variantId);
+
+            if (newQty > availableQty)
+            {
+                MessageBox.Show("Không đủ tồn kho. Số lượng còn lại: " + availableQty, "Không đủ hàng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            row["Quantity"] = newQty;
+            row["Total"] = newQty * Convert.ToDecimal(row["UnitPrice"]) - Convert.ToDecimal(row["Discount"]);
+            RecalculateTotals();
+
+            if (dgvCart.CurrentRow != null && Convert.ToInt32(dgvCart.CurrentRow.Cells["ProductId"].Value) == productId)
+            {
+                numQty.Value = newQty;
+            }
+
+            return true;
+        }
+
+        private int GetAvailableStock(int productId, int? variantId)
+        {
+            string sql = "SELECT quantity FROM inventory WHERE product_id = @pid AND (variant_id = @vid OR (variant_id IS NULL AND @vid IS NULL))";
+            object qtyObj = DatabaseHelper.ExecuteScalar(sql,
+                new MySqlParameter("@pid", productId),
+                new MySqlParameter("@vid", variantId.HasValue ? (object)variantId.Value : DBNull.Value)
+            );
+            return qtyObj != null && qtyObj != DBNull.Value ? Convert.ToInt32(qtyObj) : 0;
         }
 
         private void BtnRemoveItem_Click(object sender, EventArgs e)

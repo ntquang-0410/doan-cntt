@@ -1,86 +1,72 @@
-# doan-cntt
+# Convenience Store WinForms
 
-Ứng dụng WinForms quản lý cửa hàng tiện lợi, viết bằng C# trên .NET Framework 4.8 và dùng MySQL qua `MySql.Data.dll`.
+Ứng dụng WinForms quản lý cửa hàng tiện lợi cho môn Đồ án CNTT. Dự án ưu tiên chạy ổn định, có giao diện thao tác được và kết nối MySQL thật.
 
-## Trạng thái hiện tại
-
-- Đã build được bằng MSBuild có sẵn của .NET Framework.
-- File chạy sau build: `ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe`.
-- Đã có các màn hình chính: đăng nhập, bán hàng POS, ca làm việc, sản phẩm, kho, nhân viên, khách hàng, khuyến mãi, báo cáo.
-- Có nút **Xem giao diện demo** ở màn hình đăng nhập để mở giao diện trước khi cấu hình database.
-- Đã có schema/dump/seed database trong thư mục `database`.
-- Luồng chạy thật dùng MySQL local, database `convenience_store`, user ứng dụng `store_app`.
-
-## Kiến trúc mục tiêu
-
-Dự án sẽ đi theo hướng:
+## Công nghệ
 
 ```text
 WinForms .NET Framework 4.8
-  -> Presentation Layer: Forms
-  -> Business Logic Layer: BLL/Services
-  -> Data Access Layer: DAL/Repositories + Entity Framework 6
-  -> MySQL
+MySQL
+ADO.NET / MySql.Data.dll
+Mô hình 3 lớp từng bước: Forms -> BLL -> DAL
 ```
 
-Hiện tại code nghiệp vụ vẫn còn nằm nhiều trong Form và gọi `DatabaseHelper` trực tiếp. Các bước refactor BLL/DAL/EF6 sẽ làm dần sau khi giao diện ổn định.
+Phạm vi hiện tại không dùng SQL Server và không bắt buộc Entity Framework. Một phần module `Customer` đã được tách mẫu sang `BLL`, `DAL`, `Models`, `DTOs`; các module còn lại vẫn dùng `DatabaseHelper` trực tiếp để giữ app ổn định trong phạm vi đồ án.
 
-## Cấu hình database
+## Chức năng chính
 
-Connection string nằm trong `ConvenienceStoreApp\App.config`:
+- Đăng nhập theo tài khoản và phân quyền `Admin`, `Manager`, `Cashier`, `Staff`.
+- Chế độ xem giao diện demo không cần MySQL.
+- POS bán hàng:
+  - Tìm sản phẩm theo tên/barcode.
+  - Thêm sản phẩm vào giỏ.
+  - Tăng/giảm số lượng bằng nút `+`/`-`.
+  - Kiểm tra tồn kho.
+  - Thanh toán và tạo hóa đơn.
+  - Trừ tồn kho bằng trigger database.
+- Quản lý ca làm việc.
+- Quản lý khách hàng.
+- Quản lý sản phẩm và danh mục.
+- Quản lý tồn kho và nhập hàng:
+  - Xem/tìm/lọc tồn kho.
+  - Tạo đơn nhập hàng.
+  - Sửa/xóa dòng sản phẩm trong đơn đang tạo.
+  - Xác nhận nhận hàng để cộng tồn kho.
+  - Hủy đơn pending.
+  - Hoàn tác đơn đã nhập, trừ lại tồn kho và ghi lịch sử.
+  - Điều chỉnh tồn kho thủ công.
+- Quản lý nhân viên.
+- Quản lý khuyến mãi.
+- Báo cáo doanh thu, sản phẩm bán chạy, nhật ký hoạt động.
+
+## Database
+
+Thư mục `database` có các file quan trọng:
+
+```text
+database/schema-convenience_store-202605120907.sql
+database/dump-convenience_store-clean-20260620.sql
+database/cleanup_duplicate_products.sql
+database/backup-before-cleanup-20260620.sql
+```
+
+Nên dùng file dump sạch mới:
+
+```text
+database/dump-convenience_store-clean-20260620.sql
+```
+
+File này đã dọn các sản phẩm mẫu bị trùng như `Coca Cola lon 330ml`, `Cà phê G7 hộp 20 gói`, `Bánh Oreo gói 137g`.
+
+## Cấu hình kết nối
+
+Connection string nằm trong `ConvenienceStoreApp/App.config`:
 
 ```xml
 Server=localhost;Port=3306;Database=convenience_store;Uid=store_app;Pwd=store123;Charset=utf8mb4;
 ```
 
-Không nên dùng trực tiếp tài khoản `root` trong app. Tạo user riêng `store_app` theo hướng dẫn bên dưới.
-
-## Setup sau khi clone từ Git
-
-Máy mới cần có:
-
-- MySQL Server
-- MySQL Workbench
-- .NET Framework 4.8 Runtime
-- .NET Framework 4.8 Developer Pack/Targeting Pack nếu muốn build bằng MSBuild
-
-### 1. Tạo database
-
-Mở MySQL Workbench, vào connection local, mở Query tab và chạy:
-
-```sql
-CREATE DATABASE IF NOT EXISTS convenience_store
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-
-USE convenience_store;
-```
-
-### 2. Import database mẫu
-
-Trong MySQL Workbench:
-
-```text
-Server > Data Import > Import from Self-Contained File
-```
-
-Chọn file:
-
-```text
-database\dump-convenience_store-202605120906.sql
-```
-
-Ở `Default Target Schema`, chọn:
-
-```text
-convenience_store
-```
-
-Sau đó bấm `Start Import`.
-
-### 3. Tạo user cho app
-
-Chạy trong Query tab:
+Tạo user MySQL cho app:
 
 ```sql
 CREATE USER IF NOT EXISTS 'store_app'@'localhost'
@@ -92,67 +78,77 @@ TO 'store_app'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-Nếu user đã tồn tại, chạy:
+## Cài đặt database
+
+Trong MySQL Workbench:
+
+1. Tạo database:
 
 ```sql
-ALTER USER 'store_app'@'localhost'
-IDENTIFIED BY 'store123';
-
-GRANT ALL PRIVILEGES ON convenience_store.*
-TO 'store_app'@'localhost';
-
-FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS convenience_store
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 ```
 
-### 4. Kiểm tra dữ liệu
+2. Import file:
 
-Chạy:
+```text
+database/dump-convenience_store-clean-20260620.sql
+```
+
+3. Kiểm tra dữ liệu:
 
 ```sql
 USE convenience_store;
-
 SHOW TABLES;
-SELECT * FROM users;
+SELECT username, role, is_active FROM users;
 ```
 
-Nếu thấy `admin01` và `staff01`, database đã sẵn sàng.
+Tài khoản đăng nhập mẫu:
 
-## Import database
-
-Dùng MySQL Workbench như phần trên, hoặc đường dẫn thật đến `mysql.exe` để import:
-
-```powershell
-mysql -u root -p convenience_store < database\dump-convenience_store-202605120906.sql
+```text
+admin01 / 123456
+staff01 / 123456
 ```
 
-Nên dùng file dump nếu muốn có dữ liệu mẫu đầy đủ. Tài khoản đăng nhập phần mềm có trong dump:
+## Build và chạy
 
-- `admin01` / `123456`
-- `staff01` / `123456`
-
-## Build
+Build bằng MSBuild:
 
 ```powershell
 & C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe ConvenienceStoreApp\ConvenienceStoreApp.csproj /t:Build /p:Configuration=Debug
 ```
 
-Build hiện thành công, nhưng có warning vì máy thiếu .NET Framework 4.8 Targeting Pack. Nếu muốn build chuẩn hơn, cài .NET Framework 4.8 Developer Pack/Targeting Pack.
+Chạy app:
 
-## Xem giao diện trước
+```text
+ConvenienceStoreApp/bin/Debug/ConvenienceStoreApp.exe
+```
 
-1. Build app.
-2. Mở `ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe`.
-3. Ở màn hình đăng nhập, chọn **Xem giao diện demo**.
+Nếu máy báo thiếu .NET Framework 4.8 Targeting Pack khi build, cài thêm `.NET Framework 4.8 Developer Pack`. App hiện vẫn build được trên máy đang phát triển, chỉ còn warning về targeting pack/architecture.
 
-Chế độ demo dùng tài khoản nội bộ `demo.admin`, quyền `Admin`, không cần kết nối MySQL để vào màn hình chính.
+## Luồng test đề xuất
 
-## Việc còn lại
+1. Đăng nhập `admin01/123456`.
+2. Mở `Tồn Kho & Nhập Hàng`, kiểm tra danh sách tồn kho không còn sản phẩm trùng.
+3. Tạo đơn nhập hàng, thêm sản phẩm, sửa/xóa dòng, lưu đơn.
+4. Xác nhận nhận hàng, kiểm tra tồn kho tăng.
+5. Hoàn tác đơn đã nhập, kiểm tra tồn kho giảm lại.
+6. Mở POS, thêm sản phẩm theo barcode/tên.
+7. Tăng/giảm số lượng bằng `+`/`-`.
+8. Thanh toán, kiểm tra hóa đơn được tạo và tồn kho giảm.
+9. Chuyển module khi POS còn giỏ hàng để kiểm tra cảnh báo.
+10. Xem báo cáo doanh thu/sản phẩm bán chạy.
 
-- Xác thực login và các luồng nghiệp vụ với database thật.
-- Tách dần Form -> BLL -> DAL theo mô hình 3 lớp.
-- Thêm Entity Framework 6 provider cho MySQL và tạo `AppDbContext`.
-- Kiểm tra POS: mở ca, bán hàng, tạo hóa đơn, trừ tồn kho, tích điểm khách hàng.
-- Kiểm tra nhập hàng: tạo purchase order, xác nhận nhận hàng, trigger cộng tồn kho.
-- Hoàn thiện quản lý biến thể sản phẩm trong Product Management.
-- Bổ sung xử lý khuyến mãi `buy_x_get_y`; hiện UI chủ yếu hỗ trợ `percent` và `fixed`.
-- Kiểm thử giao diện và xử lý lỗi kết nối database thân thiện hơn.
+## Ghi chú báo cáo đồ án
+
+Có thể trình bày kiến trúc như sau:
+
+- `Forms`: giao diện WinForms, sự kiện, bind dữ liệu.
+- `BLL`: lớp nghiệp vụ, đã tách mẫu ở module Customer.
+- `DAL`: repository truy cập MySQL bằng ADO.NET/MySql.Data.
+- `Models/DTOs`: model và dữ liệu hiển thị cho form.
+- `DatabaseHelper`: helper dùng chung để kết nối và chạy SQL.
+
+Do phạm vi đồ án nhỏ, nhóm ưu tiên hoàn thiện chức năng, giao diện và luồng nghiệp vụ. Mô hình 3 lớp được áp dụng từng bước và có thể tiếp tục tách các module còn lại sau.
+

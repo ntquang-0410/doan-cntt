@@ -185,13 +185,13 @@ namespace ConvenienceStoreApp.Forms
             btnReceivePO.Click += BtnReceivePO_Click;
 
             btnCancelPendingPO = new Button();
-            btnCancelPendingPO.Text = "Hủy Đơn Pending";
+            btnCancelPendingPO.Text = "Hủy/Hoàn Tác Đơn";
             btnCancelPendingPO.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnCancelPendingPO.BackColor = Color.FromArgb(231, 76, 60);
             btnCancelPendingPO.ForeColor = Color.White;
             btnCancelPendingPO.FlatStyle = FlatStyle.Flat;
             btnCancelPendingPO.FlatAppearance.BorderSize = 0;
-            btnCancelPendingPO.Size = new Size(145, 30);
+            btnCancelPendingPO.Size = new Size(150, 30);
             btnCancelPendingPO.Location = new Point(445, 10);
             btnCancelPendingPO.Click += BtnCancelPendingPO_Click;
 
@@ -424,14 +424,13 @@ namespace ConvenienceStoreApp.Forms
             try
             {
                 string sql = @"
-                    SELECT p.id as ProductId, v.id as VariantId, p.barcode as Barcode, p.name as TenSanPham, 
-                           COALESCE(v.variant_name, 'Mặc định') as PhanLoai,
+                    SELECT p.id as ProductId, NULL as VariantId, p.barcode as Barcode, p.name as TenSanPham, 
+                           p.unit as DonViTinh,
                            COALESCE(i.quantity, 0) as TonKho, 
                            COALESCE(i.min_quantity, 10) as DinhMucToiThieu,
                            i.expiry_date as HanSuDung
                     FROM products p
-                    LEFT JOIN product_variants v ON p.id = v.product_id
-                    LEFT JOIN inventory i ON p.id = i.product_id AND (v.id = i.variant_id OR (v.id IS NULL AND i.variant_id IS NULL))
+                    LEFT JOIN inventory i ON p.id = i.product_id AND i.variant_id IS NULL
                     WHERE p.is_active = 1";
 
                 List<MySqlParameter> prs = new List<MySqlParameter>();
@@ -439,7 +438,7 @@ namespace ConvenienceStoreApp.Forms
                 string search = txtStockSearch.Text.Trim();
                 if (!string.IsNullOrEmpty(search))
                 {
-                    sql += " AND (p.name LIKE @kw OR p.barcode = @kwExact OR v.barcode = @kwExact)";
+                    sql += " AND (p.name LIKE @kw OR p.barcode = @kwExact)";
                     prs.Add(new MySqlParameter("@kw", "%" + search + "%"));
                     prs.Add(new MySqlParameter("@kwExact", search));
                 }
@@ -537,7 +536,7 @@ namespace ConvenienceStoreApp.Forms
                 return;
             }
 
-            lblAdjustProduct.Text = Convert.ToString(dgvStock.CurrentRow.Cells["TenSanPham"].Value) + " - " + Convert.ToString(dgvStock.CurrentRow.Cells["PhanLoai"].Value);
+            lblAdjustProduct.Text = Convert.ToString(dgvStock.CurrentRow.Cells["TenSanPham"].Value) + " - ĐVT: " + Convert.ToString(dgvStock.CurrentRow.Cells["DonViTinh"].Value);
             numAdjustQty.Value = Convert.ToDecimal(dgvStock.CurrentRow.Cells["TonKho"].Value);
             numAdjustMinQty.Value = Convert.ToDecimal(dgvStock.CurrentRow.Cells["DinhMucToiThieu"].Value);
 
@@ -574,8 +573,7 @@ namespace ConvenienceStoreApp.Forms
             if (dgvStock.CurrentRow == null) return;
 
             int productId = Convert.ToInt32(dgvStock.CurrentRow.Cells["ProductId"].Value);
-            object variantCellValue = dgvStock.CurrentRow.Cells["VariantId"].Value;
-            object variantId = (variantCellValue == null || variantCellValue == DBNull.Value) ? (object)DBNull.Value : Convert.ToInt32(variantCellValue);
+            object variantId = DBNull.Value;
             int oldQty = Convert.ToInt32(dgvStock.CurrentRow.Cells["TonKho"].Value);
             int newQty = Convert.ToInt32(numAdjustQty.Value);
             int diffQty = newQty - oldQty;
@@ -866,6 +864,169 @@ namespace ConvenienceStoreApp.Forms
         private void BtnCancelPO_Click(object sender, EventArgs e)
         {
             pnlCreatePO.Visible = false;
+        }
+
+        private void BtnCancelPendingPO_Click(object sender, EventArgs e)
+        {
+            if (dgvPurchaseOrders.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn đơn nhập hàng cần hủy hoặc hoàn tác.", "Chọn đơn hàng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int poId = Convert.ToInt32(dgvPurchaseOrders.CurrentRow.Cells["PO_ID"].Value);
+            string status = dgvPurchaseOrders.CurrentRow.Cells["TrangThai"].Value.ToString();
+
+            if (status == "cancelled")
+            {
+                MessageBox.Show("Đơn nhập hàng này đã bị hủy trước đó.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string confirmMessage = status == "pending"
+                ? "Bạn có chắc chắn muốn hủy đơn nhập hàng #" + poId + "?"
+                : "Đơn #" + poId + " đã nhập kho. Hoàn tác sẽ trừ lại tồn kho theo các dòng hàng trong đơn và ghi lịch sử điều chỉnh. Tiếp tục?";
+
+            DialogResult dr = MessageBox.Show(confirmMessage, "Xác nhận hủy/hoàn tác đơn", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dr == DialogResult.No) return;
+
+            if (status == "pending")
+            {
+                try
+                {
+                    string sql = "UPDATE purchase_orders SET status = 'cancelled', note = CONCAT(COALESCE(note, ''), ' | Đã hủy bởi ', @user) WHERE id = @id AND status = 'pending'";
+                    int affected = DatabaseHelper.ExecuteNonQuery(
+                        sql,
+                        new MySqlParameter("@id", poId),
+                        new MySqlParameter("@user", SessionManager.FullName));
+
+                    if (affected == 0)
+                    {
+                        MessageBox.Show("Không hủy được đơn. Có thể trạng thái đơn đã thay đổi.", "Không thể hủy", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    LoadPurchaseOrders();
+                    MessageBox.Show("Đã hủy đơn nhập hàng #" + poId + ".", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi hủy đơn nhập hàng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                return;
+            }
+
+            if (status == "received")
+            {
+                ReverseReceivedPurchaseOrder(poId);
+                return;
+            }
+
+            MessageBox.Show("Trạng thái đơn không hợp lệ để hủy hoặc hoàn tác.", "Không thể xử lý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private void ReverseReceivedPurchaseOrder(int poId)
+        {
+            using (MySqlConnection conn = DatabaseHelper.GetConnection())
+            {
+                using (MySqlTransaction trans = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        string checkSql = @"
+                            SELECT poi.product_id, poi.variant_id, poi.quantity, p.name,
+                                   COALESCE(i.quantity, 0) AS current_qty
+                            FROM purchase_order_items poi
+                            INNER JOIN products p ON p.id = poi.product_id
+                            LEFT JOIN inventory i ON i.product_id = poi.product_id
+                                AND (i.variant_id = poi.variant_id OR (i.variant_id IS NULL AND poi.variant_id IS NULL))
+                            WHERE poi.order_id = @poId";
+
+                        MySqlCommand checkCmd = new MySqlCommand(checkSql, conn, trans);
+                        checkCmd.Parameters.AddWithValue("@poId", poId);
+
+                        DataTable items = new DataTable();
+                        using (MySqlDataAdapter adapter = new MySqlDataAdapter(checkCmd))
+                        {
+                            adapter.Fill(items);
+                        }
+
+                        if (items.Rows.Count == 0)
+                        {
+                            throw new InvalidOperationException("Đơn nhập hàng không có dòng sản phẩm.");
+                        }
+
+                        foreach (DataRow row in items.Rows)
+                        {
+                            int qty = Convert.ToInt32(row["quantity"]);
+                            int currentQty = Convert.ToInt32(row["current_qty"]);
+                            if (currentQty < qty)
+                            {
+                                throw new InvalidOperationException("Không đủ tồn kho để hoàn tác sản phẩm: " + row["name"].ToString());
+                            }
+                        }
+
+                        foreach (DataRow row in items.Rows)
+                        {
+                            int productId = Convert.ToInt32(row["product_id"]);
+                            object variantId = row["variant_id"] == DBNull.Value ? (object)DBNull.Value : Convert.ToInt32(row["variant_id"]);
+                            int qty = Convert.ToInt32(row["quantity"]);
+
+                            string updateInventorySql = @"
+                                UPDATE inventory
+                                SET quantity = quantity - @qty
+                                WHERE product_id = @pid
+                                  AND (variant_id = @vid OR (variant_id IS NULL AND @vid IS NULL))";
+
+                            MySqlCommand updateInventoryCmd = new MySqlCommand(updateInventorySql, conn, trans);
+                            updateInventoryCmd.Parameters.AddWithValue("@qty", qty);
+                            updateInventoryCmd.Parameters.AddWithValue("@pid", productId);
+                            updateInventoryCmd.Parameters.AddWithValue("@vid", variantId);
+                            updateInventoryCmd.ExecuteNonQuery();
+
+                            string movementSql = @"
+                                INSERT INTO stock_movements
+                                    (product_id, variant_id, quantity, movement_type, reference_type, reference_id, staff_id, note)
+                                VALUES
+                                    (@pid, @vid, @qty, 'adjustment', 'purchase_order', @poId, @staff, @note)";
+
+                            MySqlCommand movementCmd = new MySqlCommand(movementSql, conn, trans);
+                            movementCmd.Parameters.AddWithValue("@pid", productId);
+                            movementCmd.Parameters.AddWithValue("@vid", variantId);
+                            movementCmd.Parameters.AddWithValue("@qty", -qty);
+                            movementCmd.Parameters.AddWithValue("@poId", poId);
+                            movementCmd.Parameters.AddWithValue("@staff", SessionManager.UserId);
+                            movementCmd.Parameters.AddWithValue("@note", "Hoàn tác nhập kho từ PO #" + poId + " bởi " + SessionManager.FullName);
+                            movementCmd.ExecuteNonQuery();
+                        }
+
+                        string updatePOSql = @"
+                            UPDATE purchase_orders
+                            SET status = 'cancelled',
+                                note = CONCAT(COALESCE(note, ''), ' | Đã hoàn tác nhập kho bởi ', @user)
+                            WHERE id = @poId AND status = 'received'";
+
+                        MySqlCommand updatePOCmd = new MySqlCommand(updatePOSql, conn, trans);
+                        updatePOCmd.Parameters.AddWithValue("@poId", poId);
+                        updatePOCmd.Parameters.AddWithValue("@user", SessionManager.FullName);
+                        int affected = updatePOCmd.ExecuteNonQuery();
+                        if (affected == 0)
+                        {
+                            throw new InvalidOperationException("Trạng thái đơn đã thay đổi, không thể hoàn tác.");
+                        }
+
+                        trans.Commit();
+                        LoadPurchaseOrders();
+                        LoadStock();
+                        MessageBox.Show("Đã hoàn tác nhập kho cho đơn #" + poId + ". Tồn kho đã được trừ lại và lịch sử kho đã được ghi.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        MessageBox.Show("Không thể hoàn tác đơn đã nhập: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         private void BtnReceivePO_Click(object sender, EventArgs e)

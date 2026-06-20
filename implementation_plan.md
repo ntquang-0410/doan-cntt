@@ -2,17 +2,17 @@
 
 ## Định hướng mới
 
-Dự án không bắt buộc dùng SQL Server. Hướng triển khai được chốt là:
+Dự án không bắt buộc dùng SQL Server hoặc Entity Framework. Hướng triển khai được chốt là:
 
 ```text
 WinForms .NET Framework 4.8
   -> Presentation Layer: Forms
   -> Business Logic Layer: Services/BLL
-  -> Data Access Layer: Repositories/DAL + Entity Framework 6
+  -> Data Access Layer: Repositories/DAL + ADO.NET/MySql.Data
   -> MySQL
 ```
 
-Ưu tiên trước mắt là **có giao diện chạy được để xem và góp ý**, sau đó mới tách dần code sang mô hình 3 lớp và thay `DatabaseHelper`/SQL trực tiếp bằng EF6.
+Ưu tiên triển khai là **WinForms + MySQL + ADO.NET**, tổ chức theo mô hình 3 lớp từng bước. Trước mắt giữ app ổn định, giao diện thao tác được, sau đó tách dần code SQL trực tiếp trong Form sang BLL/DAL.
 
 ## Trạng thái hiện tại
 
@@ -37,6 +37,11 @@ WinForms .NET Framework 4.8
 - Database MySQL đã có schema/dump trong thư mục `database`.
 - Cấu hình kết nối app đang dùng user MySQL riêng `store_app/store123`.
 - Đã thêm xử lý lỗi toàn cục và màn hình báo lỗi module để app không tự thoát khi một form như POS gặp lỗi khởi tạo/kết nối.
+- POS đã chỉnh được số lượng bằng nút cộng/trừ trong giỏ hàng và có cảnh báo khi chuyển module nếu còn giỏ chưa thanh toán.
+- Inventory đã có tạo đơn nhập, sửa/xóa dòng trong đơn đang tạo, xác nhận nhập kho, hủy đơn pending, hoàn tác đơn đã nhập và điều chỉnh tồn kho thủ công.
+- Luồng sản phẩm đã chốt theo cách đơn giản: mỗi barcode là một sản phẩm độc lập; không dùng `product_variants` trong luồng chính.
+- Đã dọn dữ liệu mẫu trùng sản phẩm/barcode trong MySQL và tạo dump sạch `database/dump-convenience_store-clean-20260620.sql`.
+- Đã cập nhật README theo công nghệ hiện tại, cách setup, tài khoản mẫu, luồng test và ghi chú báo cáo đồ án.
 
 ## Thống kê đã hoàn thành
 
@@ -48,15 +53,15 @@ WinForms .NET Framework 4.8
 - Đã có các form nghiệp vụ chính.
 - Đã bắt đầu mô hình 3 lớp với module `Customer`.
 - Đã gia cố luồng mở `MainForm`/module con: nếu POS hoặc form khác lỗi, app hiển thị thông báo thay vì tự đóng.
+- POS đã thao tác bán hàng cơ bản tốt hơn: tìm barcode, thêm giỏ, tăng/giảm số lượng, kiểm tra tồn, thanh toán.
+- Inventory đã hoàn thiện thêm các thao tác chính cho đồ án: nhập hàng, nhận hàng, hủy/hoàn tác đơn nhập, điều chỉnh tồn.
 
 ## Thống kê chưa hoàn thành
 
-- Chưa xác nhận toàn bộ luồng nghiệp vụ thật sau khi import database trên máy đang chạy.
-- Chưa kiểm thử xong đăng nhập nhân viên `staff01/123456` và mở POS sau khi database kết nối ổn định.
 - POS vẫn còn SQL trực tiếp trong Form, chưa tách BLL/DAL.
 - Employee, Promotion, Product, Inventory, Report chưa tách sang mô hình 3 lớp.
-- Chưa đưa Entity Framework 6 vào DAL.
-- Chưa hoàn thiện quản lý biến thể sản phẩm.
+- Chưa cần Entity Framework 6; hướng chính hiện tại là ADO.NET/MySql.Data.
+- Không triển khai quản lý biến thể sản phẩm trong giai đoạn nộp đồ án; mỗi barcode là một sản phẩm riêng.
 - Chưa hoàn thiện khuyến mãi `buy_x_get_y`.
 - Chưa có in/xuất hóa đơn thật.
 - Chưa có tài liệu báo cáo đồ án đầy đủ như ERD, mô tả use case, sơ đồ kiến trúc, hướng dẫn sử dụng.
@@ -74,7 +79,7 @@ WinForms .NET Framework 4.8
   - Inventory: tồn kho, đơn nhập hàng.
   - Employee/Customer/Promotion/Product/Report: đủ vùng danh sách và form nhập liệu.
 
-## Milestone 2 - Tách mô hình 3 lớp
+## Milestone 2 - Tách mô hình 3 lớp từng bước
 
 Tạo và chuyển dần sang cấu trúc:
 
@@ -82,8 +87,8 @@ Tạo và chuyển dần sang cấu trúc:
 ConvenienceStoreApp/
 ├── Forms/              # Presentation Layer
 ├── BLL/                # Business logic/services
-├── DAL/                # DbContext, repositories, unit of work
-├── Models/             # Entity classes map database
+├── DAL/                # Repositories dùng ADO.NET/MySql.Data
+├── Models/             # Domain/data models
 ├── DTOs/               # View/data transfer models
 └── Common/             # Session, validation, formatting, helpers
 ```
@@ -92,7 +97,7 @@ Nguyên tắc:
 
 - Form chỉ xử lý giao diện, sự kiện, bind dữ liệu, hiển thị thông báo.
 - BLL xử lý nghiệp vụ: đăng nhập, phân quyền, tính tiền, tồn kho, khuyến mãi, ca làm việc.
-- DAL xử lý truy cập dữ liệu bằng EF6.
+- DAL xử lý truy cập dữ liệu bằng ADO.NET/MySql.Data thông qua repository.
 - Models map với bảng MySQL.
 - DTOs phục vụ DataGridView và dữ liệu màn hình, tránh để Form tự join/query phức tạp.
 
@@ -106,19 +111,15 @@ Trạng thái hiện tại của Milestone 2:
   - `DAL/CustomerRepository.cs`
   - `BLL/CustomerService.cs`
 - `CustomerForm` hiện chỉ gọi `CustomerService`, không còn viết SQL trực tiếp trong Form.
-- DAL vẫn đang dùng `DatabaseHelper` và SQL trực tiếp để giữ app ổn định trước khi đưa EF6 vào.
+- DAL vẫn đang dùng `DatabaseHelper` và SQL trực tiếp để giữ app ổn định. Đây là hướng phù hợp với công nghệ đã chốt: WinForms + MySQL + ADO.NET.
 
-## Milestone 3 - Entity Framework 6 + MySQL
+## Milestone 3 - Hoàn thiện 3 lớp với ADO.NET/MySQL
 
-- Thêm provider EF6 cho MySQL:
-  - `MySql.Data`
-  - `MySql.Data.EntityFramework` hoặc provider EF6 tương thích phiên bản đang dùng.
-- Tạo `DAL/AppDbContext.cs`.
-- Tạo entity cho các bảng chính:
+- Không đưa EF6 vào giai đoạn hiện tại.
+- Tạo repository/service cho các nhóm nghiệp vụ chính:
   - `User`
   - `Category`
   - `Product`
-  - `ProductVariant`
   - `Inventory`
   - `Customer`
   - `Order`
@@ -126,25 +127,22 @@ Trạng thái hiện tại của Milestone 2:
   - `Promotion`
   - `PurchaseOrder`
   - `StockMovement`
-- Chuyển CRUD đơn giản trước:
+- Chuyển module đơn giản trước:
   - Customer
   - Employee
   - Promotion
 - Sau đó chuyển module phức tạp:
-  - Product/Category/Variant
+  - Product/Category
   - Inventory/PurchaseOrder
   - POS/Order/Payment
 
 ## Việc còn lại gần nhất
 
-1. Chạy và rà giao diện demo.
-2. Sửa layout nếu có màn hình bị lệch, khó nhìn, hoặc thao tác chưa rõ.
-3. Import database MySQL và tạo user `store_app`.
-4. Kiểm thử đăng nhập thật bằng `admin01/123456` và `staff01/123456`.
-5. Kiểm thử mở POS bằng tài khoản Staff/Cashier; nếu còn lỗi, ghi lại nội dung thông báo mới trên màn hình.
-6. Kiểm thử module `Customer` với database thật sau khi import dump.
-7. Chuyển module `Employee` sang cùng pattern 3 lớp.
-8. Sau khi Customer/Employee ổn, tiếp tục Promotion, Product, Inventory, POS.
+1. Rà lần cuối luồng POS: mở ca, thêm hàng, tăng/giảm số lượng, thanh toán, tồn kho giảm.
+2. Rà lần cuối luồng Inventory: tạo đơn nhập, sửa/xóa dòng, nhận hàng, tồn kho tăng, hủy/hoàn tác đơn.
+3. Chuẩn bị tài liệu nộp đồ án: ERD, use case, sơ đồ 3 lớp, hướng dẫn cài đặt/chạy app, tài khoản demo.
+4. Nếu còn thời gian, chuyển module `Employee` sang cùng pattern 3 lớp như `Customer`.
+5. Sau khi Customer/Employee ổn, có thể tiếp tục Promotion, Product, Inventory, POS.
 
 ## Tiêu chí hoàn thành
 
@@ -153,3 +151,4 @@ Trạng thái hiện tại của Milestone 2:
 - Các form chính thao tác được với dữ liệu thật.
 - Code không còn SQL trực tiếp trong Form sau khi hoàn tất refactor.
 - Dự án trình bày rõ mô hình 3 lớp: Presentation, Business Logic, Data Access.
+- Công nghệ được trình bày thống nhất: WinForms + MySQL + ADO.NET/MySql.Data, không dùng EF6 trong phạm vi hiện tại.

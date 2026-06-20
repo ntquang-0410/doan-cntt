@@ -173,8 +173,13 @@ namespace ConvenienceStoreApp.Forms
             {
                 try
                 {
-                    HighlightNavButton(btn);
+                    if (!CanLeaveCurrentChildForm())
+                    {
+                        return;
+                    }
+
                     onClickAction();
+                    HighlightNavButton(btn);
                 }
                 catch (Exception ex)
                 {
@@ -184,6 +189,26 @@ namespace ConvenienceStoreApp.Forms
 
             sidebarPanel.Controls.Add(btn);
             return btn;
+        }
+
+        private bool CanLeaveCurrentChildForm()
+        {
+            foreach (Control ctrl in contentPanel.Controls)
+            {
+                POSForm posForm = ctrl as POSForm;
+                if (posForm != null && posForm.HasPendingCart)
+                {
+                    DialogResult dr = MessageBox.Show(
+                        "POS đang có giỏ hàng chưa thanh toán. Nếu chuyển màn hình, đơn hiện tại sẽ bị hủy khỏi giao diện.\n\nBạn có muốn chuyển tiếp không?",
+                        "Giỏ hàng chưa thanh toán",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    return dr == DialogResult.Yes;
+                }
+            }
+
+            return true;
         }
 
         private void HighlightNavButton(Button selectedBtn)
