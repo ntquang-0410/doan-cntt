@@ -97,6 +97,31 @@ namespace ConvenienceStoreApp.Forms
                 startY += btnHeight + spacing;
             }
 
+            Panel logoutPanel = new Panel();
+            logoutPanel.Dock = DockStyle.Bottom;
+            logoutPanel.Height = 70;
+            logoutPanel.BackColor = Color.FromArgb(44, 62, 80);
+
+            btnLogout = new Button();
+            btnLogout.Text = "↩ Đăng Xuất";
+            btnLogout.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
+            btnLogout.ForeColor = Color.White;
+            btnLogout.BackColor = Color.FromArgb(231, 76, 60);
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatAppearance.MouseDownBackColor = Color.FromArgb(192, 57, 43);
+            btnLogout.FlatAppearance.MouseOverBackColor = Color.FromArgb(203, 67, 53);
+            btnLogout.Size = new Size(210, 45);
+            btnLogout.Location = new Point(10, 12);
+            btnLogout.TextAlign = ContentAlignment.MiddleLeft;
+            btnLogout.Padding = new Padding(15, 0, 0, 0);
+            btnLogout.Cursor = Cursors.Hand;
+            btnLogout.Click += BtnLogout_Click;
+
+            logoutPanel.Controls.Add(btnLogout);
+            sidebarPanel.Controls.Add(logoutPanel);
+            logoutPanel.BringToFront();
+
             // 2. Header Panel
             headerPanel = new Panel();
             headerPanel.Height = 60;
@@ -115,22 +140,7 @@ namespace ConvenienceStoreApp.Forms
             lblUserStatus.AutoSize = true;
             lblUserStatus.Location = new Point(20, 20);
 
-            btnLogout = new Button();
-            btnLogout.Text = "Đăng xuất";
-            btnLogout.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
-            btnLogout.ForeColor = Color.FromArgb(231, 76, 60);
-            btnLogout.BackColor = Color.Transparent;
-            btnLogout.FlatStyle = FlatStyle.Flat;
-            btnLogout.FlatAppearance.BorderSize = 1;
-            btnLogout.FlatAppearance.BorderColor = Color.FromArgb(231, 76, 60);
-            btnLogout.Cursor = Cursors.Hand;
-            btnLogout.Size = new Size(100, 30);
-            btnLogout.Location = new Point(this.ClientSize.Width - sidebarPanel.Width - 120, 15);
-            btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnLogout.Click += BtnLogout_Click;
-
             headerPanel.Controls.Add(lblUserStatus);
-            headerPanel.Controls.Add(btnLogout);
 
             // 3. Content Panel
             contentPanel = new Panel();
@@ -161,8 +171,15 @@ namespace ConvenienceStoreApp.Forms
             btn.Cursor = Cursors.Hand;
             btn.Click += (s, e) =>
             {
-                HighlightNavButton(btn);
-                onClickAction();
+                try
+                {
+                    HighlightNavButton(btn);
+                    onClickAction();
+                }
+                catch (Exception ex)
+                {
+                    ShowModuleError(text, ex);
+                }
             };
 
             sidebarPanel.Controls.Add(btn);
@@ -195,24 +212,35 @@ namespace ConvenienceStoreApp.Forms
 
         public void ShowChildForm(Form childForm)
         {
-            // Clear content panel
-            foreach (Control ctrl in contentPanel.Controls)
+            try
             {
-                Form form = ctrl as Form;
-                if (form != null)
+                // Clear content panel
+                foreach (Control ctrl in contentPanel.Controls)
                 {
-                    form.Close();
+                    Form form = ctrl as Form;
+                    if (form != null)
+                    {
+                        form.Close();
+                    }
                 }
-            }
-            contentPanel.Controls.Clear();
+                contentPanel.Controls.Clear();
 
-            // Set up child form properties
-            childForm.TopLevel = false;
-            childForm.FormBorderStyle = FormBorderStyle.None;
-            childForm.Dock = DockStyle.Fill;
-            
-            contentPanel.Controls.Add(childForm);
-            childForm.Show();
+                // Set up child form properties
+                childForm.TopLevel = false;
+                childForm.FormBorderStyle = FormBorderStyle.None;
+                childForm.Dock = DockStyle.Fill;
+                
+                contentPanel.Controls.Add(childForm);
+                childForm.Show();
+            }
+            catch
+            {
+                if (childForm != null)
+                {
+                    childForm.Dispose();
+                }
+                throw;
+            }
         }
 
         private void LoadDefaultScreen()
@@ -229,19 +257,73 @@ namespace ConvenienceStoreApp.Forms
                 if (btnReports != null)
                 {
                     HighlightNavButton(btnReports);
-                    ShowChildForm(new ReportForm());
+                    SafeShowChildForm("Báo Cáo Thống Kê", () => new ReportForm());
                 }
                 else
                 {
                     HighlightNavButton(btnPOS);
-                    ShowChildForm(new POSForm());
+                    SafeShowChildForm("Bán Hàng (POS)", () => new POSForm());
                 }
             }
             else
             {
                 HighlightNavButton(btnPOS);
-                ShowChildForm(new POSForm());
+                SafeShowChildForm("Bán Hàng (POS)", () => new POSForm());
             }
+        }
+
+        private void SafeShowChildForm(string moduleName, Func<Form> childFormFactory)
+        {
+            try
+            {
+                Form childForm = childFormFactory();
+                ShowChildForm(childForm);
+            }
+            catch (Exception ex)
+            {
+                ShowModuleError(moduleName, ex);
+            }
+        }
+
+        private void ShowModuleError(string moduleName, Exception ex)
+        {
+            Panel errorPanel = new Panel();
+            errorPanel.Dock = DockStyle.Fill;
+            errorPanel.BackColor = Color.FromArgb(245, 246, 250);
+
+            Label title = new Label();
+            title.Text = "Không mở được " + moduleName;
+            title.Font = new Font("Segoe UI", 16, FontStyle.Bold);
+            title.ForeColor = Color.FromArgb(231, 76, 60);
+            title.Size = new Size(800, 40);
+            title.Location = new Point(40, 45);
+
+            Label detail = new Label();
+            detail.Text = ex.Message + "\n\n" + ex.StackTrace;
+            detail.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            detail.ForeColor = Color.FromArgb(71, 84, 103);
+            detail.Size = new Size(850, 180);
+            detail.Location = new Point(42, 95);
+
+            Label hint = new Label();
+            hint.Text = "Kiểm tra kết nối MySQL, dữ liệu import và cấu hình App.config. Ứng dụng vẫn đang chạy, bạn có thể chọn module khác ở sidebar.";
+            hint.Font = new Font("Segoe UI", 10, FontStyle.Italic);
+            hint.ForeColor = Color.FromArgb(127, 140, 141);
+            hint.Size = new Size(850, 60);
+            hint.Location = new Point(42, 285);
+
+            errorPanel.Controls.Add(title);
+            errorPanel.Controls.Add(detail);
+            errorPanel.Controls.Add(hint);
+
+            contentPanel.Controls.Clear();
+            contentPanel.Controls.Add(errorPanel);
+
+            MessageBox.Show(
+                "Không mở được " + moduleName + ":\n" + ex.Message + "\n\n" + ex.StackTrace,
+                "Lỗi module",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
 
         private void ShowDemoHome()
@@ -356,9 +438,7 @@ namespace ConvenienceStoreApp.Forms
             if (dr == DialogResult.Yes)
             {
                 SessionManager.Logout();
-                this.Hide();
-                LoginForm login = new LoginForm();
-                login.Show();
+                this.Close();
             }
         }
     }

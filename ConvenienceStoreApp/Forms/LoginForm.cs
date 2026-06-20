@@ -255,10 +255,31 @@ namespace ConvenienceStoreApp.Forms
 
         private void OpenMainForm()
         {
-            this.Hide();
-            MainForm mainForm = new MainForm();
-            mainForm.FormClosed += (s, args) => this.Close();
-            mainForm.Show();
+            try
+            {
+                MainForm mainForm = new MainForm();
+                mainForm.FormClosed += MainForm_FormClosed;
+                this.Hide();
+                mainForm.Show();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                btnLogin.Enabled = true;
+                btnLogin.Text = "ĐĂNG NHẬP";
+                lblError.Text = "Không mở được màn hình chính: " + ex.Message;
+            }
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            SessionManager.Logout();
+            txtPassword.Text = "";
+            btnLogin.Enabled = true;
+            btnLogin.Text = "ĐĂNG NHẬP";
+            lblError.Text = "";
+            this.Show();
+            txtUsername.Focus();
         }
     }
 }

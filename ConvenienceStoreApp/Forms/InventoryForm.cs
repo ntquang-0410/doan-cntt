@@ -17,6 +17,7 @@ namespace ConvenienceStoreApp.Forms
         private DataGridView dgvStock;
         private TextBox txtStockSearch;
         private Button btnStockSearch;
+        private Button btnAdjustStock;
         private CheckBox chkLowStockOnly;
         private CheckBox chkExpiredOnly;
 
@@ -24,6 +25,7 @@ namespace ConvenienceStoreApp.Forms
         private DataGridView dgvPurchaseOrders;
         private Button btnCreatePO;
         private Button btnReceivePO;
+        private Button btnCancelPendingPO;
 
         // Create PO Panel Overlay
         private Panel pnlCreatePO;
@@ -32,10 +34,22 @@ namespace ConvenienceStoreApp.Forms
         private DataGridView dgvPOItems;
         private DataTable poItemsTable;
         private Button btnAddPOItem;
+        private Button btnRemovePOItem;
         private Button btnSavePO;
         private Button btnCancelPO;
         private Label lblPOTotal;
         private decimal poTotalAmount = 0;
+
+        // Stock adjustment panel overlay
+        private Panel pnlAdjustStock;
+        private Label lblAdjustProduct;
+        private NumericUpDown numAdjustQty;
+        private NumericUpDown numAdjustMinQty;
+        private DateTimePicker dtpAdjustExpiry;
+        private CheckBox chkAdjustNoExpiry;
+        private TextBox txtAdjustNote;
+        private Button btnSaveStockAdjust;
+        private Button btnCancelStockAdjust;
 
         // Helper lists for PO Creation
         private ComboBox cboPOProducts;
@@ -73,6 +87,7 @@ namespace ConvenienceStoreApp.Forms
 
             // Create PO Panel Overlay setup
             SetupCreatePOPanel();
+            SetupAdjustStockPanel();
 
             this.Controls.Add(tabControl);
         }
@@ -98,20 +113,31 @@ namespace ConvenienceStoreApp.Forms
             btnStockSearch.Location = new Point(275, 11);
             btnStockSearch.Click += BtnStockSearch_Click;
 
+            btnAdjustStock = new Button();
+            btnAdjustStock.Text = "Điều chỉnh tồn";
+            btnAdjustStock.BackColor = Color.FromArgb(26, 188, 156);
+            btnAdjustStock.ForeColor = Color.White;
+            btnAdjustStock.FlatStyle = FlatStyle.Flat;
+            btnAdjustStock.FlatAppearance.BorderSize = 0;
+            btnAdjustStock.Size = new Size(115, 26);
+            btnAdjustStock.Location = new Point(380, 11);
+            btnAdjustStock.Click += BtnAdjustStock_Click;
+
             chkLowStockOnly = new CheckBox();
             chkLowStockOnly.Text = "⚠️ Sắp hết hàng (Tồn <= Tối thiểu)";
             chkLowStockOnly.AutoSize = true;
-            chkLowStockOnly.Location = new Point(390, 14);
+            chkLowStockOnly.Location = new Point(515, 14);
             chkLowStockOnly.CheckedChanged += ChkStockFilter_CheckedChanged;
 
             chkExpiredOnly = new CheckBox();
             chkExpiredOnly.Text = "⏳ Sắp hết hạn sử dụng";
             chkExpiredOnly.AutoSize = true;
-            chkExpiredOnly.Location = new Point(620, 14);
+            chkExpiredOnly.Location = new Point(745, 14);
             chkExpiredOnly.CheckedChanged += ChkStockFilter_CheckedChanged;
 
             pnlFilter.Controls.Add(txtStockSearch);
             pnlFilter.Controls.Add(btnStockSearch);
+            pnlFilter.Controls.Add(btnAdjustStock);
             pnlFilter.Controls.Add(chkLowStockOnly);
             pnlFilter.Controls.Add(chkExpiredOnly);
 
@@ -158,8 +184,20 @@ namespace ConvenienceStoreApp.Forms
             btnReceivePO.Location = new Point(190, 10);
             btnReceivePO.Click += BtnReceivePO_Click;
 
+            btnCancelPendingPO = new Button();
+            btnCancelPendingPO.Text = "Hủy Đơn Pending";
+            btnCancelPendingPO.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            btnCancelPendingPO.BackColor = Color.FromArgb(231, 76, 60);
+            btnCancelPendingPO.ForeColor = Color.White;
+            btnCancelPendingPO.FlatStyle = FlatStyle.Flat;
+            btnCancelPendingPO.FlatAppearance.BorderSize = 0;
+            btnCancelPendingPO.Size = new Size(145, 30);
+            btnCancelPendingPO.Location = new Point(445, 10);
+            btnCancelPendingPO.Click += BtnCancelPendingPO_Click;
+
             pnlActions.Controls.Add(btnCreatePO);
             pnlActions.Controls.Add(btnReceivePO);
+            pnlActions.Controls.Add(btnCancelPendingPO);
 
             dgvPurchaseOrders = new DataGridView();
             dgvPurchaseOrders.Dock = DockStyle.Fill;
@@ -229,13 +267,24 @@ namespace ConvenienceStoreApp.Forms
             dgvPOItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvPOItems.AllowUserToAddRows = false;
             dgvPOItems.RowHeadersVisible = false;
+            dgvPOItems.CellEndEdit += DgvPOItems_CellEndEdit;
+            dgvPOItems.DataError += DgvPOItems_DataError;
+
+            btnRemovePOItem = new Button();
+            btnRemovePOItem.Text = "Xóa dòng";
+            btnRemovePOItem.BackColor = Color.FromArgb(231, 76, 60);
+            btnRemovePOItem.ForeColor = Color.White;
+            btnRemovePOItem.FlatStyle = FlatStyle.Flat;
+            btnRemovePOItem.Size = new Size(90, 28);
+            btnRemovePOItem.Location = new Point(20, 470);
+            btnRemovePOItem.Click += BtnRemovePOItem_Click;
 
             lblPOTotal = new Label();
             lblPOTotal.Text = "TỔNG CỘNG: 0 VND";
             lblPOTotal.Font = new Font("Segoe UI", 11, FontStyle.Bold);
             lblPOTotal.ForeColor = Color.FromArgb(231, 76, 60);
             lblPOTotal.Size = new Size(300, 25);
-            lblPOTotal.Location = new Point(20, 480);
+            lblPOTotal.Location = new Point(120, 472);
 
             // Actions
             btnSavePO = new Button() { Text = "Lưu Đơn Hàng", BackColor = Color.FromArgb(46, 204, 113), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Size = new Size(130, 35), Location = new Point(390, 520) };
@@ -251,11 +300,103 @@ namespace ConvenienceStoreApp.Forms
             pnlCreatePO.Controls.Add(txtPONote);
             pnlCreatePO.Controls.Add(grpAddItem);
             pnlCreatePO.Controls.Add(dgvPOItems);
+            pnlCreatePO.Controls.Add(btnRemovePOItem);
             pnlCreatePO.Controls.Add(lblPOTotal);
             pnlCreatePO.Controls.Add(btnSavePO);
             pnlCreatePO.Controls.Add(btnCancelPO);
 
             this.Controls.Add(pnlCreatePO);
+        }
+
+        private void SetupAdjustStockPanel()
+        {
+            pnlAdjustStock = new Panel();
+            pnlAdjustStock.Size = new Size(520, 360);
+            pnlAdjustStock.BackColor = Color.White;
+            pnlAdjustStock.BorderStyle = BorderStyle.FixedSingle;
+            pnlAdjustStock.Visible = false;
+
+            Label lblTitle = new Label();
+            lblTitle.Text = "ĐIỀU CHỈNH TỒN KHO";
+            lblTitle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(44, 62, 80);
+            lblTitle.Size = new Size(500, 25);
+            lblTitle.Location = new Point(10, 15);
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+
+            lblAdjustProduct = new Label();
+            lblAdjustProduct.Text = "";
+            lblAdjustProduct.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblAdjustProduct.ForeColor = Color.FromArgb(44, 62, 80);
+            lblAdjustProduct.Size = new Size(460, 45);
+            lblAdjustProduct.Location = new Point(30, 55);
+
+            Label lblQty = new Label() { Text = "Số lượng tồn:", Location = new Point(30, 115), AutoSize = true };
+            numAdjustQty = new NumericUpDown();
+            numAdjustQty.Minimum = 0;
+            numAdjustQty.Maximum = 1000000;
+            numAdjustQty.Size = new Size(130, 25);
+            numAdjustQty.Location = new Point(150, 112);
+            numAdjustQty.ThousandsSeparator = true;
+
+            Label lblMin = new Label() { Text = "Tồn tối thiểu:", Location = new Point(30, 150), AutoSize = true };
+            numAdjustMinQty = new NumericUpDown();
+            numAdjustMinQty.Minimum = 0;
+            numAdjustMinQty.Maximum = 1000000;
+            numAdjustMinQty.Size = new Size(130, 25);
+            numAdjustMinQty.Location = new Point(150, 147);
+            numAdjustMinQty.ThousandsSeparator = true;
+
+            Label lblExpiry = new Label() { Text = "Hạn sử dụng:", Location = new Point(30, 185), AutoSize = true };
+            dtpAdjustExpiry = new DateTimePicker();
+            dtpAdjustExpiry.Format = DateTimePickerFormat.Short;
+            dtpAdjustExpiry.Size = new Size(130, 25);
+            dtpAdjustExpiry.Location = new Point(150, 182);
+
+            chkAdjustNoExpiry = new CheckBox();
+            chkAdjustNoExpiry.Text = "Không có hạn sử dụng";
+            chkAdjustNoExpiry.AutoSize = true;
+            chkAdjustNoExpiry.Location = new Point(300, 185);
+            chkAdjustNoExpiry.CheckedChanged += ChkAdjustNoExpiry_CheckedChanged;
+
+            Label lblNote = new Label() { Text = "Ghi chú:", Location = new Point(30, 220), AutoSize = true };
+            txtAdjustNote = new TextBox();
+            txtAdjustNote.Size = new Size(340, 25);
+            txtAdjustNote.Location = new Point(150, 217);
+
+            btnSaveStockAdjust = new Button();
+            btnSaveStockAdjust.Text = "Lưu Điều Chỉnh";
+            btnSaveStockAdjust.BackColor = Color.FromArgb(46, 204, 113);
+            btnSaveStockAdjust.ForeColor = Color.White;
+            btnSaveStockAdjust.FlatStyle = FlatStyle.Flat;
+            btnSaveStockAdjust.Size = new Size(130, 35);
+            btnSaveStockAdjust.Location = new Point(250, 290);
+            btnSaveStockAdjust.Click += BtnSaveStockAdjust_Click;
+
+            btnCancelStockAdjust = new Button();
+            btnCancelStockAdjust.Text = "Hủy bỏ";
+            btnCancelStockAdjust.BackColor = Color.FromArgb(189, 195, 199);
+            btnCancelStockAdjust.ForeColor = Color.White;
+            btnCancelStockAdjust.FlatStyle = FlatStyle.Flat;
+            btnCancelStockAdjust.Size = new Size(100, 35);
+            btnCancelStockAdjust.Location = new Point(390, 290);
+            btnCancelStockAdjust.Click += BtnCancelStockAdjust_Click;
+
+            pnlAdjustStock.Controls.Add(lblTitle);
+            pnlAdjustStock.Controls.Add(lblAdjustProduct);
+            pnlAdjustStock.Controls.Add(lblQty);
+            pnlAdjustStock.Controls.Add(numAdjustQty);
+            pnlAdjustStock.Controls.Add(lblMin);
+            pnlAdjustStock.Controls.Add(numAdjustMinQty);
+            pnlAdjustStock.Controls.Add(lblExpiry);
+            pnlAdjustStock.Controls.Add(dtpAdjustExpiry);
+            pnlAdjustStock.Controls.Add(chkAdjustNoExpiry);
+            pnlAdjustStock.Controls.Add(lblNote);
+            pnlAdjustStock.Controls.Add(txtAdjustNote);
+            pnlAdjustStock.Controls.Add(btnSaveStockAdjust);
+            pnlAdjustStock.Controls.Add(btnCancelStockAdjust);
+
+            this.Controls.Add(pnlAdjustStock);
         }
 
         private void SetupPOItemsTable()
@@ -272,6 +413,8 @@ namespace ConvenienceStoreApp.Forms
             dgvPOItems.Columns["ProductId"].Visible = false;
             dgvPOItems.Columns["UnitCost"].DefaultCellStyle.Format = "N0";
             dgvPOItems.Columns["Total"].DefaultCellStyle.Format = "N0";
+            dgvPOItems.Columns["ProductName"].ReadOnly = true;
+            dgvPOItems.Columns["Total"].ReadOnly = true;
         }
 
         // --- DATA LOADING ---
@@ -281,7 +424,7 @@ namespace ConvenienceStoreApp.Forms
             try
             {
                 string sql = @"
-                    SELECT p.id as ProductId, p.barcode as Barcode, p.name as TenSanPham, 
+                    SELECT p.id as ProductId, v.id as VariantId, p.barcode as Barcode, p.name as TenSanPham, 
                            COALESCE(v.variant_name, 'Mặc định') as PhanLoai,
                            COALESCE(i.quantity, 0) as TonKho, 
                            COALESCE(i.min_quantity, 10) as DinhMucToiThieu,
@@ -315,6 +458,7 @@ namespace ConvenienceStoreApp.Forms
                 dgvStock.DataSource = dt;
 
                 dgvStock.Columns["ProductId"].Visible = false;
+                dgvStock.Columns["VariantId"].Visible = false;
             }
             catch (Exception ex)
             {
@@ -383,6 +527,128 @@ namespace ConvenienceStoreApp.Forms
         private void ChkStockFilter_CheckedChanged(object sender, EventArgs e)
         {
             LoadStock();
+        }
+
+        private void BtnAdjustStock_Click(object sender, EventArgs e)
+        {
+            if (dgvStock.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn một sản phẩm trong danh sách tồn kho.", "Chọn sản phẩm", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            lblAdjustProduct.Text = Convert.ToString(dgvStock.CurrentRow.Cells["TenSanPham"].Value) + " - " + Convert.ToString(dgvStock.CurrentRow.Cells["PhanLoai"].Value);
+            numAdjustQty.Value = Convert.ToDecimal(dgvStock.CurrentRow.Cells["TonKho"].Value);
+            numAdjustMinQty.Value = Convert.ToDecimal(dgvStock.CurrentRow.Cells["DinhMucToiThieu"].Value);
+
+            object expiryObj = dgvStock.CurrentRow.Cells["HanSuDung"].Value;
+            if (expiryObj == null || expiryObj == DBNull.Value)
+            {
+                chkAdjustNoExpiry.Checked = true;
+                dtpAdjustExpiry.Value = DateTime.Today;
+            }
+            else
+            {
+                chkAdjustNoExpiry.Checked = false;
+                dtpAdjustExpiry.Value = Convert.ToDateTime(expiryObj);
+            }
+
+            txtAdjustNote.Text = "Điều chỉnh tồn kho thủ công";
+            pnlAdjustStock.Location = new Point((tabControl.Width - pnlAdjustStock.Width) / 2, (tabControl.Height - pnlAdjustStock.Height) / 2);
+            pnlAdjustStock.Visible = true;
+            pnlAdjustStock.BringToFront();
+        }
+
+        private void ChkAdjustNoExpiry_CheckedChanged(object sender, EventArgs e)
+        {
+            dtpAdjustExpiry.Enabled = !chkAdjustNoExpiry.Checked;
+        }
+
+        private void BtnCancelStockAdjust_Click(object sender, EventArgs e)
+        {
+            pnlAdjustStock.Visible = false;
+        }
+
+        private void BtnSaveStockAdjust_Click(object sender, EventArgs e)
+        {
+            if (dgvStock.CurrentRow == null) return;
+
+            int productId = Convert.ToInt32(dgvStock.CurrentRow.Cells["ProductId"].Value);
+            object variantCellValue = dgvStock.CurrentRow.Cells["VariantId"].Value;
+            object variantId = (variantCellValue == null || variantCellValue == DBNull.Value) ? (object)DBNull.Value : Convert.ToInt32(variantCellValue);
+            int oldQty = Convert.ToInt32(dgvStock.CurrentRow.Cells["TonKho"].Value);
+            int newQty = Convert.ToInt32(numAdjustQty.Value);
+            int diffQty = newQty - oldQty;
+            int minQty = Convert.ToInt32(numAdjustMinQty.Value);
+            string note = txtAdjustNote.Text.Trim();
+
+            object expiryValue = chkAdjustNoExpiry.Checked ? (object)DBNull.Value : dtpAdjustExpiry.Value.Date;
+
+            using (MySqlConnection conn = DatabaseHelper.GetConnection())
+            {
+                using (MySqlTransaction trans = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        string sql = @"
+                            UPDATE inventory
+                            SET quantity = @qty,
+                                min_quantity = @minQty,
+                                expiry_date = @expiry
+                            WHERE product_id = @pid
+                              AND (variant_id = @vid OR (variant_id IS NULL AND @vid IS NULL))";
+
+                        MySqlCommand cmd = new MySqlCommand(sql, conn, trans);
+                        cmd.Parameters.AddWithValue("@pid", productId);
+                        cmd.Parameters.AddWithValue("@vid", variantId);
+                        cmd.Parameters.AddWithValue("@qty", newQty);
+                        cmd.Parameters.AddWithValue("@minQty", minQty);
+                        cmd.Parameters.AddWithValue("@expiry", expiryValue);
+                        int affected = cmd.ExecuteNonQuery();
+
+                        if (affected == 0)
+                        {
+                            string insertSql = @"
+                                INSERT INTO inventory (product_id, variant_id, quantity, min_quantity, expiry_date)
+                                VALUES (@pid, @vid, @qty, @minQty, @expiry)";
+                            MySqlCommand insertCmd = new MySqlCommand(insertSql, conn, trans);
+                            insertCmd.Parameters.AddWithValue("@pid", productId);
+                            insertCmd.Parameters.AddWithValue("@vid", variantId);
+                            insertCmd.Parameters.AddWithValue("@qty", newQty);
+                            insertCmd.Parameters.AddWithValue("@minQty", minQty);
+                            insertCmd.Parameters.AddWithValue("@expiry", expiryValue);
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        if (diffQty != 0)
+                        {
+                            string movementSql = @"
+                                INSERT INTO stock_movements
+                                    (product_id, variant_id, quantity, movement_type, reference_type, reference_id, staff_id, note)
+                                VALUES
+                                    (@pid, @vid, @diff, 'adjustment', 'manual', NULL, @staff, @note)";
+
+                            MySqlCommand movementCmd = new MySqlCommand(movementSql, conn, trans);
+                            movementCmd.Parameters.AddWithValue("@pid", productId);
+                            movementCmd.Parameters.AddWithValue("@vid", variantId);
+                            movementCmd.Parameters.AddWithValue("@diff", diffQty);
+                            movementCmd.Parameters.AddWithValue("@staff", SessionManager.UserId);
+                            movementCmd.Parameters.AddWithValue("@note", string.IsNullOrEmpty(note) ? "Điều chỉnh tồn kho thủ công" : note);
+                            movementCmd.ExecuteNonQuery();
+                        }
+
+                        trans.Commit();
+                        pnlAdjustStock.Visible = false;
+                        LoadStock();
+                        MessageBox.Show("Đã cập nhật tồn kho.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        MessageBox.Show("Không thể điều chỉnh tồn kho: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         private void DgvStock_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)

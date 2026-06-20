@@ -35,7 +35,31 @@ WinForms .NET Framework 4.8
   - Mở `MainForm` với quyền `Admin`.
   - Mặc định hiển thị trang tổng quan giao diện tĩnh để tránh lỗi database khi mới mở app.
 - Database MySQL đã có schema/dump trong thư mục `database`.
-- Service `MySQL80` đang chạy, nhưng máy chưa có `mysql` CLI trong PATH nên chưa xác thực import database bằng dòng lệnh.
+- Cấu hình kết nối app đang dùng user MySQL riêng `store_app/store123`.
+- Đã thêm xử lý lỗi toàn cục và màn hình báo lỗi module để app không tự thoát khi một form như POS gặp lỗi khởi tạo/kết nối.
+
+## Thống kê đã hoàn thành
+
+- Build ứng dụng WinForms thành công bằng MSBuild.
+- Có giao diện demo để xem app mà chưa cần database.
+- Có database dump/schema phục vụ chạy nghiệp vụ thật.
+- Có hướng dẫn setup MySQL và user `store_app` trong README.
+- Đã phân quyền menu theo role `Admin`, `Manager`, `Cashier`, `Staff`.
+- Đã có các form nghiệp vụ chính.
+- Đã bắt đầu mô hình 3 lớp với module `Customer`.
+- Đã gia cố luồng mở `MainForm`/module con: nếu POS hoặc form khác lỗi, app hiển thị thông báo thay vì tự đóng.
+
+## Thống kê chưa hoàn thành
+
+- Chưa xác nhận toàn bộ luồng nghiệp vụ thật sau khi import database trên máy đang chạy.
+- Chưa kiểm thử xong đăng nhập nhân viên `staff01/123456` và mở POS sau khi database kết nối ổn định.
+- POS vẫn còn SQL trực tiếp trong Form, chưa tách BLL/DAL.
+- Employee, Promotion, Product, Inventory, Report chưa tách sang mô hình 3 lớp.
+- Chưa đưa Entity Framework 6 vào DAL.
+- Chưa hoàn thiện quản lý biến thể sản phẩm.
+- Chưa hoàn thiện khuyến mãi `buy_x_get_y`.
+- Chưa có in/xuất hóa đơn thật.
+- Chưa có tài liệu báo cáo đồ án đầy đủ như ERD, mô tả use case, sơ đồ kiến trúc, hướng dẫn sử dụng.
 
 ## Milestone 1 - Hoàn thiện giao diện trước
 
@@ -115,11 +139,12 @@ Trạng thái hiện tại của Milestone 2:
 
 1. Chạy và rà giao diện demo.
 2. Sửa layout nếu có màn hình bị lệch, khó nhìn, hoặc thao tác chưa rõ.
-3. Import database MySQL.
+3. Import database MySQL và tạo user `store_app`.
 4. Kiểm thử đăng nhập thật bằng `admin01/123456` và `staff01/123456`.
-5. Kiểm thử module `Customer` với database thật sau khi import dump.
-6. Chuyển module `Employee` sang cùng pattern 3 lớp.
-7. Sau khi Customer/Employee ổn, tiếp tục Promotion, Product, Inventory, POS.
+5. Kiểm thử mở POS bằng tài khoản Staff/Cashier; nếu còn lỗi, ghi lại nội dung thông báo mới trên màn hình.
+6. Kiểm thử module `Customer` với database thật sau khi import dump.
+7. Chuyển module `Employee` sang cùng pattern 3 lớp.
+8. Sau khi Customer/Employee ổn, tiếp tục Promotion, Product, Inventory, POS.
 
 ## Tiêu chí hoàn thành
 

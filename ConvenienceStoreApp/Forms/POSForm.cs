@@ -93,6 +93,7 @@ namespace ConvenienceStoreApp.Forms
             dgvCart.BackgroundColor = Color.White;
             dgvCart.BorderStyle = BorderStyle.FixedSingle;
             dgvCart.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvCart.AutoGenerateColumns = false;
             dgvCart.AllowUserToAddRows = false;
             dgvCart.ReadOnly = true;
             dgvCart.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -300,7 +301,8 @@ namespace ConvenienceStoreApp.Forms
         {
             cartTable = new DataTable();
             cartTable.Columns.Add("ProductId", typeof(int));
-            cartTable.Columns.Add("VariantId", typeof(int));
+            DataColumn variantColumn = cartTable.Columns.Add("VariantId", typeof(int));
+            variantColumn.AllowDBNull = true;
             cartTable.Columns.Add("Barcode", typeof(string));
             cartTable.Columns.Add("ProductName", typeof(string));
             cartTable.Columns.Add("VariantName", typeof(string));
@@ -309,23 +311,41 @@ namespace ConvenienceStoreApp.Forms
             cartTable.Columns.Add("Discount", typeof(decimal));
             cartTable.Columns.Add("Total", typeof(decimal));
 
+            SetupCartGridColumns();
             dgvCart.DataSource = cartTable;
+        }
 
-            // Format Columns
-            dgvCart.Columns["ProductId"].Visible = false;
-            dgvCart.Columns["VariantId"].Visible = false;
-            dgvCart.Columns["Barcode"].HeaderText = "Mã Vạch";
-            dgvCart.Columns["ProductName"].HeaderText = "Sản Phẩm";
-            dgvCart.Columns["VariantName"].HeaderText = "Phân Loại";
-            dgvCart.Columns["Quantity"].HeaderText = "SL";
-            dgvCart.Columns["UnitPrice"].HeaderText = "Đơn Giá";
-            dgvCart.Columns["Discount"].HeaderText = "Khấu Trừ";
-            dgvCart.Columns["Total"].HeaderText = "Thành Tiền";
+        private void SetupCartGridColumns()
+        {
+            dgvCart.Columns.Clear();
 
-            dgvCart.Columns["Quantity"].Width = 40;
-            dgvCart.Columns["UnitPrice"].DefaultCellStyle.Format = "N0";
-            dgvCart.Columns["Discount"].DefaultCellStyle.Format = "N0";
-            dgvCart.Columns["Total"].DefaultCellStyle.Format = "N0";
+            AddCartTextColumn("ProductId", "ProductId", "ProductId", false, 0, null);
+            AddCartTextColumn("VariantId", "VariantId", "VariantId", false, 0, null);
+            AddCartTextColumn("Barcode", "Barcode", "Mã Vạch", true, 90, null);
+            AddCartTextColumn("ProductName", "ProductName", "Sản Phẩm", true, 180, null);
+            AddCartTextColumn("VariantName", "VariantName", "Phân Loại", true, 90, null);
+            AddCartTextColumn("Quantity", "Quantity", "SL", true, 45, null);
+            AddCartTextColumn("UnitPrice", "UnitPrice", "Đơn Giá", true, 90, "N0");
+            AddCartTextColumn("Discount", "Discount", "Khấu Trừ", true, 90, "N0");
+            AddCartTextColumn("Total", "Total", "Thành Tiền", true, 100, "N0");
+        }
+
+        private void AddCartTextColumn(string name, string dataPropertyName, string headerText, bool visible, int width, string format)
+        {
+            DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
+            column.Name = name;
+            column.DataPropertyName = dataPropertyName;
+            column.HeaderText = headerText;
+            column.Visible = visible;
+            if (width > 0)
+            {
+                column.Width = width;
+            }
+            if (!string.IsNullOrEmpty(format))
+            {
+                column.DefaultCellStyle.Format = format;
+            }
+            dgvCart.Columns.Add(column);
         }
 
         private void LoadSettings()
