@@ -1,0 +1,13 @@
+d:\New folder\doan-cntt\ConvenienceStoreApp\obj\Debug\ConvenienceStoreApp.csprojResolveAssemblyReference.cache
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe.config
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.exe
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\ConvenienceStoreApp.pdb
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\mscorlib.dll
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\MySql.Data.dll
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\normidna.nlp
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\normnfc.nlp
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\normnfd.nlp
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\normnfkc.nlp
+D:\New folder\doan-cntt\ConvenienceStoreApp\bin\Debug\normnfkd.nlp
+D:\New folder\doan-cntt\ConvenienceStoreApp\obj\Debug\ConvenienceStoreApp.exe
+D:\New folder\doan-cntt\ConvenienceStoreApp\obj\Debug\ConvenienceStoreApp.pdb
